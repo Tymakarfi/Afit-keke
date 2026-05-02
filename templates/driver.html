@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>AFIT Keke — Driver Panel</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;600&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: #0b1120; color: #e2e8f0; font-family: 'Inter', sans-serif; min-height: 100vh; }
+    header { background: rgba(11,17,32,0.95); border-bottom: 1px solid rgba(255,255,255,0.09); padding: 0 28px; height: 60px; display: flex; align-items: center; justify-content: space-between; }
+    .h-title { font-family: 'Bebas Neue', sans-serif; font-size: 22px; letter-spacing: 0.1em; }
+    .h-sub { font-size: 10px; color: #64748b; letter-spacing: 0.15em; }
+    .back-btn { font-size: 12px; color: #64748b; text-decoration: none; border: 1px solid rgba(255,255,255,0.1); padding: 6px 14px; border-radius: 6px; }
+    .back-btn:hover { color: #3b82f6; border-color: #3b82f6; }
+    main { max-width: 900px; margin: 28px auto; padding: 0 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    .card { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.09); border-radius: 12px; padding: 20px; }
+    .card-title { font-size: 10px; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase; color: #3b82f6; margin-bottom: 16px; padding-bottom: 10px; border-bottom: 1px solid rgba(59,130,246,0.15); }
+    .verify-input { width: 100%; padding: 14px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: #e2e8f0; font-size: 16px; font-family: 'Bebas Neue', sans-serif; letter-spacing: 0.2em; text-transform: uppercase; outline: none; text-align: center; margin-bottom: 12px; }
+    .verify-input:focus { border-color: #3b82f6; }
+    .verify-btn { width: 100%; padding: 12px; background: linear-gradient(135deg, #1e40af, #3b82f6); border: none; border-radius: 8px; color: #fff; font-family: 'Bebas Neue', sans-serif; font-size: 18px; letter-spacing: 0.1em; cursor: pointer; }
+    .verify-result { margin-top: 16px; display: none; }
+    .verify-card { background: rgba(34,197,94,0.08); border: 1px solid rgba(34,197,94,0.3); border-radius: 10px; padding: 16px; }
+    .verify-card.invalid { background: rgba(239,68,68,0.08); border-color: rgba(239,68,68,0.3); }
+    .v-ticket { font-family: 'Bebas Neue', sans-serif; font-size: 28px; color: #f59e0b; letter-spacing: 0.15em; }
+    .v-label { font-size: 10px; color: #64748b; letter-spacing: 0.1em; margin-bottom: 4px; margin-top: 10px; }
+    .v-value { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+    .v-badge { display: inline-block; padding: 3px 10px; border-radius: 4px; font-size: 10px; font-weight: 700; letter-spacing: 0.1em; }
+    .v-assigned { background: #22c55e; color: #000; }
+    .v-queued { background: #f59e0b; color: #000; }
+    .v-completed { background: #334155; color: #fff; }
+    .keke-item { display: flex; align-items: center; gap: 12px; padding: 12px; border-radius: 8px; margin-bottom: 8px; border: 1px solid rgba(255,255,255,0.06); }
+    .keke-free { background: rgba(34,197,94,0.06); border-color: rgba(34,197,94,0.2); }
+    .keke-busy { background: rgba(245,158,11,0.06); border-color: rgba(245,158,11,0.2); }
+    .keke-icon { font-size: 28px; }
+    .keke-label { font-size: 14px; font-weight: 700; }
+    .keke-status { font-size: 10px; letter-spacing: 0.1em; margin-top: 2px; }
+    .keke-free .keke-status { color: #22c55e; }
+    .keke-busy .keke-status { color: #f59e0b; }
+    .keke-detail { font-size: 11px; color: #64748b; margin-top: 2px; }
+    .keke-ticket-code { font-size: 11px; color: #f59e0b; font-family: monospace; }
+    @media (max-width: 600px) { main { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+<header>
+  <div>
+    <div class="h-title">🚗 Driver Panel</div>
+    <div class="h-sub">AFIT Smart-Keke — Staff View</div>
+  </div>
+  <a href="/login" class="back-btn">← Student Portal</a>
+</header>
+<main>
+  <div class="card">
+    <div class="card-title">🎫 Verify Passenger Ticket</div>
+    <input class="verify-input" id="tkt-input" type="text" placeholder="TKT-ABC-1234" maxlength="12"/>
+    <button class="verify-btn" onclick="verifyTicket()">VERIFY TICKET</button>
+    <div class="verify-result" id="verify-result"></div>
+  </div>
+  <div class="card">
+    <div class="card-title">🛺 Live Fleet Status</div>
+    <div id="fleet-list"></div>
+  </div>
+</main>
+<script>
+  async function verifyTicket() {
+    const code = document.getElementById("tkt-input").value.trim().toUpperCase();
+    if (!code) return;
+    const res = await fetch("/verify/" + code);
+    const d = await res.json();
+    const el = document.getElementById("verify-result");
+    el.style.display = "block";
+    if (d.error) {
+      el.innerHTML = `<div class="verify-card invalid"><div style="color:#ef4444;font-weight:700">INVALID TICKET</div><div style="font-size:13px;color:#94a3b8;margin-top:6px">No booking found for this code.</div></div>`;
+      return;
+    }
+    const badgeClass = d.status === 'assigned' ? 'v-assigned' : d.status === 'queued' ? 'v-queued' : 'v-completed';
+    el.innerHTML = `<div class="verify-card">
+      <div class="v-label">TICKET CODE</div><div class="v-ticket">${d.ticket_code}</div>
+      <div class="v-label">PASSENGER</div><div class="v-value">${d.name} <span style="color:#64748b;font-size:12px">(${d.matric})</span></div>
+      <div class="v-label">ROUTE</div><div class="v-value">${d.pickup} → ${d.destination}</div>
+      <div class="v-label">STATUS</div><span class="v-badge ${badgeClass}">${d.status.toUpperCase()}</span>
+      ${d.tricycle ? `<div style="font-size:12px;color:#64748b;margin-top:8px">Assigned to: <strong style="color:#e2e8f0">${d.tricycle}</strong></div>` : ''}
+    </div>`;
+  }
+
+  async function refreshFleet() {
+    const res = await fetch("/status");
+    const d = await res.json();
+    document.getElementById("fleet-list").innerHTML = d.tricycles.map(t => `
+      <div class="keke-item ${t.status === 'free' ? 'keke-free' : 'keke-busy'}">
+        <div class="keke-icon">🛺</div>
+        <div style="flex:1">
+          <div class="keke-label">${t.label}</div>
+          <div class="keke-status">${t.status === 'free' ? 'AVAILABLE' : 'ON TRIP'}</div>
+          ${t.passenger ? `<div class="keke-detail">👤 ${t.passenger}</div>` : ''}
+          ${t.ticket_code ? `<div class="keke-ticket-code">${t.ticket_code}</div>` : ''}
+          ${t.route ? `<div class="keke-detail">📍 ${t.route}</div>` : ''}
+        </div>
+      </div>`).join("");
+  }
+
+  document.getElementById("tkt-input").addEventListener("keydown", e => { if (e.key === "Enter") verifyTicket(); });
+  refreshFleet();
+  setInterval(refreshFleet, 3000);
+</script>
+</body>
+</html>

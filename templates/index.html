@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>AFIT Smart-Keke</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;600&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root { --blue: #1e40af; --blue2: #3b82f6; --gold: #f59e0b; --green: #22c55e; --red: #ef4444; --bg: #0b1120; --card: rgba(255,255,255,0.04); --border: rgba(255,255,255,0.09); --text: #e2e8f0; --muted: #64748b; }
+    body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; min-height: 100vh; }
+    header { background: rgba(11,17,32,0.95); border-bottom: 1px solid var(--border); padding: 0 28px; display: flex; align-items: center; justify-content: space-between; height: 60px; position: sticky; top: 0; z-index: 100; backdrop-filter: blur(10px); }
+    .h-logo-text { font-family: 'Bebas Neue', sans-serif; font-size: 22px; letter-spacing: 0.1em; color: #fff; }
+    .h-logo-sub { font-size: 10px; color: var(--muted); letter-spacing: 0.15em; }
+    .h-stats { display: flex; gap: 10px; }
+    .stat-pill { background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 5px 12px; font-size: 11px; display: flex; align-items: center; gap: 5px; }
+    .h-user { font-size: 12px; color: var(--muted); display: flex; align-items: center; gap: 8px; }
+    .logout-btn { background: none; border: 1px solid var(--border); color: var(--muted); padding: 4px 10px; border-radius: 6px; cursor: pointer; font-size: 11px; }
+    .logout-btn:hover { border-color: var(--red); color: var(--red); }
+    main { max-width: 1200px; margin: 24px auto; padding: 0 20px; display: grid; grid-template-columns: 380px 1fr; gap: 20px; }
+    .left-col, .right-col { display: flex; flex-direction: column; gap: 16px; }
+    .card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 20px; }
+    .card-title { font-size: 10px; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase; color: var(--blue2); margin-bottom: 16px; padding-bottom: 10px; border-bottom: 1px solid rgba(59,130,246,0.15); }
+    .field { margin-bottom: 12px; }
+    .field label { display: block; font-size: 10px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin-bottom: 5px; }
+    .field input, .field select { width: 100%; padding: 10px 14px; background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-size: 13px; font-family: 'Inter', sans-serif; outline: none; transition: border-color 0.2s; }
+    .field input:focus, .field select:focus { border-color: var(--blue2); }
+    .field select option { background: #1e293b; }
+    .field input[readonly] { color: var(--muted); }
+    .book-btn { width: 100%; padding: 13px; background: linear-gradient(135deg, var(--blue), var(--blue2)); border: none; border-radius: 8px; color: #fff; font-family: 'Bebas Neue', sans-serif; font-size: 18px; letter-spacing: 0.12em; cursor: pointer; margin-top: 4px; transition: opacity 0.2s; }
+    .book-btn:hover { opacity: 0.9; }
+    #booking-status-card { display: none; border-color: rgba(59,130,246,0.3); background: rgba(59,130,246,0.06); }
+    .badge { display: inline-block; padding: 3px 10px; border-radius: 4px; font-size: 10px; font-weight: 700; letter-spacing: 0.12em; }
+    .badge-queued { background: var(--gold); color: #000; }
+    .badge-assigned { background: var(--green); color: #000; }
+    .badge-completed { background: #334155; color: #fff; }
+    .ticket-box { background: rgba(0,0,0,0.3); border: 1px dashed rgba(255,255,255,0.15); border-radius: 8px; padding: 12px 16px; margin: 10px 0; display: flex; align-items: center; justify-content: space-between; }
+    .ticket-label { font-size: 10px; color: var(--muted); letter-spacing: 0.1em; }
+    .ticket-code { font-family: 'Bebas Neue', sans-serif; font-size: 22px; letter-spacing: 0.15em; color: var(--gold); }
+    .detail-row { font-size: 13px; color: #94a3b8; margin-top: 6px; }
+    .detail-row strong { color: var(--text); }
+    .cancel-btn { background: none; border: 1px solid rgba(239,68,68,0.3); color: var(--red); padding: 6px 14px; border-radius: 6px; font-size: 11px; cursor: pointer; margin-top: 10px; }
+    .countdown { background: rgba(34,197,94,0.1); border: 1px solid rgba(34,197,94,0.2); border-radius: 8px; padding: 10px 16px; margin-top: 10px; display: flex; align-items: center; gap: 10px; }
+    .countdown-num { font-family: 'Bebas Neue', sans-serif; font-size: 28px; color: var(--green); }
+    .countdown-label { font-size: 11px; color: var(--muted); }
+    .queue-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 8px; background: rgba(255,255,255,0.03); border: 1px solid var(--border); margin-bottom: 8px; }
+    .queue-item.mine { background: rgba(59,130,246,0.1); border-color: rgba(59,130,246,0.3); }
+    .q-pos { width: 26px; height: 26px; border-radius: 50%; background: rgba(245,158,11,0.15); color: var(--gold); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; flex-shrink: 0; }
+    .q-name { font-size: 13px; font-weight: 600; }
+    .q-route { font-size: 11px; color: var(--muted); margin-top: 2px; }
+    .q-ticket { font-size: 10px; color: var(--gold); font-family: monospace; }
+    .q-wait { font-size: 11px; color: var(--gold); margin-left: auto; white-space: nowrap; }
+    .empty { text-align: center; padding: 20px; color: var(--muted); font-size: 13px; }
+    .fleet-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+    .keke-card { border: 1px solid; border-radius: 10px; padding: 14px 10px; text-align: center; transition: all 0.3s; }
+    .keke-free { border-color: var(--green); background: rgba(34,197,94,0.06); }
+    .keke-busy { border-color: var(--gold); background: rgba(245,158,11,0.06); }
+    .keke-icon { font-size: 24px; }
+    .keke-label { font-size: 12px; font-weight: 700; margin-top: 4px; }
+    .keke-status { font-size: 10px; letter-spacing: 0.1em; margin-top: 2px; }
+    .keke-free .keke-status { color: var(--green); }
+    .keke-busy .keke-status { color: var(--gold); }
+    .keke-passenger { font-size: 10px; color: var(--muted); margin-top: 3px; }
+    .keke-ticket { font-size: 9px; color: var(--gold); font-family: monospace; }
+    .keke-route { font-size: 9px; color: #475569; margin-top: 2px; }
+    .history-item { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--border); font-size: 12px; }
+    .history-item:last-child { border-bottom: none; }
+    .h-status { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+    .h-s-completed { background: var(--green); }
+    .h-s-assigned { background: var(--gold); }
+    .h-s-queued { background: var(--blue2); }
+    .h-s-cancelled { background: var(--red); }
+    .h-route { flex: 1; color: #94a3b8; }
+    .h-route strong { color: var(--text); display: block; }
+    .h-ticket { font-size: 10px; color: var(--gold); font-family: monospace; }
+    .h-time { font-size: 10px; color: var(--muted); }
+    #notif-container { position: fixed; top: 68px; right: 16px; z-index: 999; width: 300px; }
+    .notif { padding: 12px 16px; border-radius: 8px; font-size: 13px; margin-bottom: 8px; border: 1px solid rgba(255,255,255,0.1); animation: slideIn 0.3s ease; }
+    @keyframes slideIn { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
+    .notif-success { background: #14532d; border-color: rgba(34,197,94,0.3); }
+    .notif-error { background: #7f1d1d; border-color: rgba(239,68,68,0.3); }
+    .notif-info { background: #1e3a5f; border-color: rgba(59,130,246,0.3); }
+    footer { text-align: center; padding: 20px; font-size: 11px; color: #1e293b; border-top: 1px solid var(--border); margin-top: 10px; }
+    @media (max-width: 768px) { main { grid-template-columns: 1fr; } .h-stats { display: none; } }
+  </style>
+</head>
+<body>
+<header>
+  <div style="display:flex;align-items:center;gap:10px">
+    <span style="font-size:24px">🛺</span>
+    <div>
+      <div class="h-logo-text">AFIT SMART-KEKE</div>
+      <div class="h-logo-sub">Campus Transport System</div>
+    </div>
+  </div>
+  <div class="h-stats">
+    <div class="stat-pill"><span style="color:var(--green)">●</span> <span id="h-free">6</span> Free</div>
+    <div class="stat-pill"><span style="color:var(--gold)">●</span> <span id="h-busy">0</span> On Trip</div>
+    <div class="stat-pill"><span style="color:var(--blue2)">●</span> <span id="h-queue">0</span> Waiting</div>
+    <div class="stat-pill">⏱ Avg Wait: <span id="h-wait">--</span> min</div>
+  </div>
+  <div class="h-user">
+    <span id="h-username">Guest</span>
+    <button class="logout-btn" onclick="logout()">Logout</button>
+  </div>
+</header>
+
+<div id="notif-container"></div>
+
+<main>
+  <div class="left-col">
+    <div class="card" id="booking-status-card">
+      <div class="card-title">📍 My Active Booking</div>
+      <div id="booking-status-body"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">🎫 Book a Tricycle</div>
+      <div class="field"><label>Full Name</label><input id="p-name" type="text" readonly/></div>
+      <div class="field"><label>Matric Number</label><input id="p-matric" type="text" readonly/></div>
+      <div class="field">
+        <label>Pickup Location</label>
+        <select id="p-start">
+          <option value="">-- Select pickup --</option>
+          <option>Main Gate</option><option>Academic Block</option><option>Library</option>
+          <option>Hostel A</option><option>Hostel B</option><option>Sports Complex</option>
+          <option>Clinic</option><option>Mess Hall</option><option>Admin Block</option><option>Engineering Lab</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Destination</label>
+        <select id="p-end">
+          <option value="">-- Select destination --</option>
+          <option>Main Gate</option><option>Academic Block</option><option>Library</option>
+          <option>Hostel A</option><option>Hostel B</option><option>Sports Complex</option>
+          <option>Clinic</option><option>Mess Hall</option><option>Admin Block</option><option>Engineering Lab</option>
+        </select>
+      </div>
+      <button class="book-btn" onclick="book()">BOOK NOW →</button>
+    </div>
+    <div class="card">
+      <div class="card-title">📋 My Trip History</div>
+      <div id="history-list"><div class="empty">No trips yet</div></div>
+    </div>
+  </div>
+
+  <div class="right-col">
+    <div class="card">
+      <div class="card-title">⏳ Live Queue (<span id="q-count">0</span> waiting)</div>
+      <div id="queue-list"><div class="empty">No passengers waiting</div></div>
+    </div>
+    <div class="card">
+      <div class="card-title">🛺 Fleet Status</div>
+      <div class="fleet-grid" id="fleet-grid"></div>
+    </div>
+  </div>
+</main>
+
+<footer>Air Force Institute of Technology, Kaduna — Smart Campus Transport Management System</footer>
+
+<script>
+  const user = JSON.parse(localStorage.getItem("afit_user") || "null");
+  if (!user) window.location.href = "/login";
+  else { document.getElementById("p-name").value = user.name; document.getElementById("p-matric").value = user.matric; document.getElementById("h-username").textContent = user.name; }
+
+  function logout() { localStorage.removeItem("afit_user"); localStorage.removeItem("afit_booking"); window.location.href = "/login"; }
+
+  let myBooking = JSON.parse(localStorage.getItem("afit_booking") || "null");
+  let tripCountdown = null;
+  let countdownSecs = 30;
+
+  async function book() {
+    const pickup = document.getElementById("p-start").value;
+    const dest = document.getElementById("p-end").value;
+    if (!pickup) { showNotif("Select a pickup location.", "error"); return; }
+    if (!dest) { showNotif("Select a destination.", "error"); return; }
+    if (pickup === dest) { showNotif("Pickup and destination cannot be the same.", "error"); return; }
+    const res = await fetch("/book", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name: user.name, matric: user.matric, pickup, destination: dest }) });
+    const data = await res.json();
+    if (data.error) { showNotif(data.error, "error"); return; }
+    myBooking = { booking_id: data.booking_id, ticket_code: data.ticket_code };
+    localStorage.setItem("afit_booking", JSON.stringify(myBooking));
+    showNotif("Booked! Ticket: " + data.ticket_code, "success");
+    refreshMyBooking();
+    refreshHistory();
+  }
+
+  async function refreshMyBooking() {
+    if (!myBooking) return;
+    const res = await fetch("/mybooking/" + myBooking.booking_id);
+    if (!res.ok) { myBooking = null; localStorage.removeItem("afit_booking"); return; }
+    const d = await res.json();
+    if (d.error) return;
+    const card = document.getElementById("booking-status-card");
+    const body = document.getElementById("booking-status-body");
+    card.style.display = "block";
+    let html = `<div class="ticket-box"><div><div class="ticket-label">TICKET CODE</div><div class="ticket-code">${d.ticket_code}</div></div><div style="font-size:28px">🎫</div></div>`;
+    if (d.status === "queued") {
+      html += `<div style="margin-bottom:8px"><span class="badge badge-queued">QUEUED</span> &nbsp; Position #${d.queue_position || '?'}</div>
+        <div class="detail-row">Route: <strong>${d.pickup} → ${d.destination}</strong></div>
+        <div class="detail-row">Est. Wait: <strong>~${d.est_wait || '?'} min</strong></div>
+        <button class="cancel-btn" onclick="cancelBooking()">✕ Cancel Booking</button>`;
+      clearInterval(tripCountdown); tripCountdown = null;
+    } else if (d.status === "assigned") {
+      html += `<div style="margin-bottom:8px"><span class="badge badge-assigned">ASSIGNED</span></div>
+        <div class="detail-row">Tricycle: <strong>${d.tricycle}</strong></div>
+        <div class="detail-row">Route: <strong>${d.pickup} → ${d.destination}</strong></div>
+        <div class="countdown"><div><div class="countdown-num" id="cd-num">${countdownSecs}</div><div class="countdown-label">seconds remaining</div></div><div style="font-size:12px;color:var(--muted)">Trip in progress</div></div>`;
+      if (!tripCountdown) startCountdown();
+    } else if (d.status === "completed") {
+      html += `<div><span class="badge badge-completed">COMPLETED</span></div><div class="detail-row" style="margin-top:8px">Trip completed. You may book again.</div>`;
+      myBooking = null; localStorage.removeItem("afit_booking");
+      clearInterval(tripCountdown); tripCountdown = null; countdownSecs = 30;
+      setTimeout(() => { card.style.display = "none"; refreshHistory(); }, 4000);
+    } else {
+      myBooking = null; localStorage.removeItem("afit_booking"); card.style.display = "none"; return;
+    }
+    body.innerHTML = html;
+  }
+
+  function startCountdown() {
+    countdownSecs = 30;
+    tripCountdown = setInterval(() => {
+      countdownSecs--;
+      const el = document.getElementById("cd-num");
+      if (el) el.textContent = Math.max(countdownSecs, 0);
+      if (countdownSecs <= 0) { clearInterval(tripCountdown); tripCountdown = null; }
+    }, 1000);
+  }
+
+  async function cancelBooking() {
+    if (!myBooking || !confirm("Cancel your booking?")) return;
+    await fetch("/cancel/" + myBooking.booking_id, { method: "POST" });
+    myBooking = null; localStorage.removeItem("afit_booking");
+    document.getElementById("booking-status-card").style.display = "none";
+    showNotif("Booking cancelled.", "info");
+  }
+
+  async function refreshStatus() {
+    const res = await fetch("/status");
+    const d = await res.json();
+    document.getElementById("h-free").textContent = d.tricycles.filter(t => t.status === "free").length;
+    document.getElementById("h-busy").textContent = d.tricycles.filter(t => t.status === "busy").length;
+    document.getElementById("h-queue").textContent = d.queue.length;
+    document.getElementById("h-wait").textContent = d.avg_wait;
+    document.getElementById("q-count").textContent = d.queue.length;
+    const ql = document.getElementById("queue-list");
+    if (d.queue.length === 0) { ql.innerHTML = '<div class="empty">No passengers waiting</div>'; }
+    else { ql.innerHTML = d.queue.map((p, i) => `<div class="queue-item ${myBooking && p.booking_id === myBooking.booking_id ? 'mine' : ''}"><div class="q-pos">#${i+1}</div><div style="flex:1"><div class="q-name">${p.name}</div><div class="q-route">${p.pickup} → ${p.destination}</div><div class="q-ticket">${p.ticket_code}</div></div><div class="q-wait">~${Math.ceil((i+1)*8)} min</div></div>`).join(""); }
+    document.getElementById("fleet-grid").innerHTML = d.tricycles.map(t => `<div class="keke-card ${t.status === 'free' ? 'keke-free' : 'keke-busy'}"><div class="keke-icon">🛺</div><div class="keke-label">${t.label}</div><div class="keke-status">${t.status === 'free' ? 'FREE' : 'ON TRIP'}</div>${t.passenger ? `<div class="keke-passenger">${t.passenger}</div>` : ''}${t.ticket_code ? `<div class="keke-ticket">${t.ticket_code}</div>` : ''}${t.route ? `<div class="keke-route">${t.route}</div>` : ''}</div>`).join("");
+  }
+
+  async function refreshHistory() {
+    if (!user) return;
+    const res = await fetch("/history/" + user.matric);
+    const data = await res.json();
+    const el = document.getElementById("history-list");
+    if (!data.length) { el.innerHTML = '<div class="empty">No trips yet</div>'; return; }
+    el.innerHTML = data.map(h => `<div class="history-item"><div class="h-status h-s-${h.status}"></div><div class="h-route"><strong>${h.pickup} → ${h.destination}</strong>${h.tricycle ? ' via ' + h.tricycle : ' ' + h.status}</div><div><div class="h-ticket">${h.ticket_code}</div><div class="h-time">${h.created_at ? h.created_at.slice(0,16) : ''}</div></div></div>`).join("");
+  }
+
+  function showNotif(msg, type = "info") {
+    const div = document.createElement("div");
+    div.className = `notif notif-${type}`;
+    div.textContent = msg;
+    document.getElementById("notif-container").prepend(div);
+    setTimeout(() => div.remove(), 5000);
+  }
+
+  refreshStatus(); refreshMyBooking(); refreshHistory();
+  setInterval(() => { refreshStatus(); refreshMyBooking(); }, 3000);
+</script>
+</body>
+</html>
