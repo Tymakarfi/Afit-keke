@@ -1,3 +1,9 @@
+from flask import Flask, render_template, request, jsonify
+import os
+
+app = Flask(__name__)
+
+# The rest of your routes (like @app.route('/')) go below this
 import os
 import sqlite3
 import random
