@@ -30,7 +30,7 @@ def init_db():
         matric TEXT,
         pickup TEXT,
         destination TEXT,
-        status TEXT DEFAULT "queued",
+        status TEXT DEFAULT 'queued',
         tricycle TEXT,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         assigned_at DATETIME,
@@ -39,7 +39,7 @@ def init_db():
     conn.execute("""CREATE TABLE IF NOT EXISTS tricycles (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         label TEXT UNIQUE,
-        status TEXT DEFAULT "free",
+        status TEXT DEFAULT 'free',
         passenger TEXT,
         current_booking_id TEXT,
         ticket_code TEXT,
@@ -255,9 +255,23 @@ def get_stats():
     active = conn.execute("SELECT count(*) FROM tricycles WHERE status=?", ("busy",)).fetchone()[0]
     free = conn.execute("SELECT count(*) FROM tricycles WHERE status=?", ("free",)).fetchone()[0]
     avg_wait = calc_avg_wait(conn)
+
     tricycle_rows = conn.execute("SELECT * FROM tricycles ORDER BY label").fetchall()
     tricycles_out = [{"label": t["label"], "status": t["status"], "passenger": t["passenger"],
                       "route": t["route"], "ticket_code": t["ticket_code"]} for t in tricycle_rows]
+
+    recent_rows = conn.execute(
+        "SELECT * FROM bookings ORDER BY created_at DESC LIMIT 15"
+    ).fetchall()
+    recent_bookings = [{"name": b["name"], "matric": b["matric"], "pickup": b["pickup"],
+                        "destination": b["destination"], "status": b["status"],
+                        "ticket_code": b["ticket_code"], "tricycle": b["tricycle"]} for b in recent_rows]
+
+    route_rows = conn.execute(
+        "SELECT pickup || ' -> ' || destination AS route, count(*) AS count FROM bookings GROUP BY route ORDER BY count DESC LIMIT 5"
+    ).fetchall()
+    top_routes = [{"route": r["route"], "count": r["count"]} for r in route_rows]
+
     conn.close()
     return jsonify({
         "total_bookings": total,
@@ -266,7 +280,9 @@ def get_stats():
         "active_trips": active,
         "free_tricycles": free,
         "avg_wait": avg_wait,
-        "tricycles": tricycles_out
+        "tricycles": tricycles_out,
+        "recent_bookings": recent_bookings,
+        "top_routes": top_routes
     })
 
 @app.route("/status")
