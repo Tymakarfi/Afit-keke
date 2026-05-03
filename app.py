@@ -1,126 +1,382 @@
 from flask import Flask, render_template, request, jsonify, session, redirect, url_for
-import time, random, string
+import sqlite3, time, random, string
 from datetime import datetime
+from functools import wraps
 
-app = Flask(__name__)
-app.secret_key = "afit_secret_key_2024"
+app = Flask(**name**)
+app.secret_key = “afit_secret_key_2024”
 
-# ── In-Memory Storage ──────────────────────────────────────
-stats = {"total_bookings": 0, "completed_trips": 0}
+# ── Database ───────────────────────────────────────────────
 
-tricycles = [{"id": i+1, "label": f"AFIT-KK-{i+1:02}", "status": "free", "passenger": None, "route": None, "ticket_code": None, "start_time": 0} for i in range(6)]
-bookings = []
+def get_db():
+conn = sqlite3.connect(‘tricycle.db’)
+conn.row_factory = sqlite3.Row
+return conn
+
+def init_db():
+conn = get_db()
+
+```
+conn.execute('''CREATE TABLE IF NOT EXISTS users (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    matric TEXT UNIQUE NOT NULL,
+    faculty TEXT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+)''')
+
+conn.execute('''CREATE TABLE IF NOT EXISTS bookings (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    booking_id TEXT UNIQUE,
+    ticket_code TEXT UNIQUE,
+    name TEXT,
+    matric TEXT,
+    pickup TEXT,
+    destination TEXT,
+    status TEXT DEFAULT 'queued',
+    tricycle TEXT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    assigned_at DATETIME,
+    completed_at DATETIME
+)''')
+
+conn.execute('''CREATE TABLE IF NOT EXISTS tricycles (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    label TEXT UNIQUE,
+    status TEXT DEFAULT 'free',
+    passenger TEXT,
+    current_booking_id TEXT,
+    ticket_code TEXT,
+    route TEXT,
+    start_time REAL DEFAULT 0
+)''')
+
+# Seed tricycles if empty
+check = conn.execute("SELECT count(*) FROM tricycles").fetchone()[0]
+if check == 0:
+    for i in range(1, 7):
+        conn.execute("INSERT INTO tricycles (label) VALUES (?)", (f"AFIT-KK-{i:02}",))
+
+conn.commit()
+conn.close()
+```
 
 # ── Helpers ────────────────────────────────────────────────
+
 def gen_ticket():
-    part1 = ''.join(random.choices(string.ascii_uppercase, k=3))
-    part2 = ''.join(random.choices(string.digits, k=4))
-    return f"TKT-{part1}-{part2}"
+part1 = ‘’.join(random.choices(string.ascii_uppercase, k=3))
+part2 = ‘’.join(random.choices(string.digits, k=4))
+return f”TKT-{part1}-{part2}”
 
 def gen_id():
-    return ''.join(random.choices(string.ascii_uppercase + string.digits, k=6))
+return ‘’.join(random.choices(string.ascii_uppercase + string.digits, k=6))
 
-def calc_avg_wait():
-    queued = len([b for b in bookings if b['status'] == 'queued'])
-    free   = len([t for t in tricycles if t['status'] == 'free'])
-    if free > 0:
-        return max(2, round((queued / max(free, 1)) * 8))
-    return round(queued * 8)
+def login_required(f):
+@wraps(f)
+def decorated(*args, **kwargs):
+if ‘user’ not in session:
+return jsonify({“error”: “Not logged in.”}), 401
+return f(*args, **kwargs)
+return decorated
 
-def process_simulation():
-    current_time = time.time()
-    for t in tricycles:
-        if t['status'] == 'busy' and (current_time - t['start_time']) >= 60:
-            stats["completed_trips"] += 1
-            # Mark booking as completed
-            for b in bookings:
-                if b.get('ticket_code') == t['ticket_code']:
-                    b['status'] = 'completed'
-                    break
-            t.update({"status": "free", "passenger": None, "route": None, "ticket_code": None, "start_time": 0})
+def process_simulation(conn):
+“”“Complete trips older than 60s and dispatch queued bookings.”””
+current_time = time.time()
 
-    # Dispatch queued passengers to free tricycles
-    queued    = [b for b in bookings if b['status'] == 'queued']
-    free_list = [t for t in tricycles if t['status'] == 'free']
-    for i in range(min(len(queued), len(free_list))):
-        person = queued[i]
-        keke   = free_list[i]
-        keke.update({
-            "status": "busy",
-            "passenger": person['name'],
-            "route": f"{person['pickup']} → {person['destination']}",
-            "ticket_code": person['ticket_code'],
-            "start_time": current_time
-        })
-        person['status'] = 'assigned'
-        person['tricycle'] = keke['label']
+```
+# Complete expired trips
+expired = conn.execute(
+    "SELECT * FROM tricycles WHERE status='busy' AND start_time > 0 AND (?  - start_time) >= 60",
+    (current_time,)
+).fetchall()
+
+for t in expired:
+    # Mark booking completed
+    conn.execute(
+        "UPDATE bookings SET status='completed', completed_at=? WHERE ticket_code=?",
+        (datetime.now(), t['ticket_code'])
+    )
+    # Free the tricycle
+    conn.execute(
+        "UPDATE tricycles SET status='free', passenger=NULL, route=NULL, ticket_code=NULL, current_booking_id=NULL, start_time=0 WHERE label=?",
+        (t['label'],)
+    )
+
+conn.commit()
+
+# Dispatch queued → free tricycles
+queued = conn.execute(
+    "SELECT * FROM bookings WHERE status='queued' ORDER BY created_at ASC"
+).fetchall()
+free_list = conn.execute(
+    "SELECT * FROM tricycles WHERE status='free'"
+).fetchall()
+
+for i in range(min(len(queued), len(free_list))):
+    person = queued[i]
+    keke   = free_list[i]
+    route  = f"{person['pickup']} → {person['destination']}"
+
+    conn.execute(
+        """UPDATE tricycles SET status='busy', passenger=?, route=?, ticket_code=?, 
+           current_booking_id=?, start_time=? WHERE label=?""",
+        (person['name'], route, person['ticket_code'], person['booking_id'], current_time, keke['label'])
+    )
+    conn.execute(
+        "UPDATE bookings SET status='assigned', tricycle=?, assigned_at=? WHERE booking_id=?",
+        (keke['label'], datetime.now(), person['booking_id'])
+    )
+
+conn.commit()
+```
+
+def calc_avg_wait(conn):
+queued = conn.execute(“SELECT count(*) FROM bookings WHERE status=‘queued’”).fetchone()[0]
+free   = conn.execute(“SELECT count(*) FROM tricycles WHERE status=‘free’”).fetchone()[0]
+if free > 0:
+return max(2, round((queued / max(free, 1)) * 8))
+return round(queued * 8)
 
 # ── Pages ──────────────────────────────────────────────────
-@app.route('/')
+
+@app.route(’/’)
 def index():
-    if 'user' not in session:
-        return redirect(url_for('login_page'))
-    return render_template('index.html')
+if ‘user’ not in session:
+return redirect(url_for(‘login_page’))
+return render_template(‘index.html’)
 
-@app.route('/login')
+@app.route(’/login’)
 def login_page():
-    return render_template('login.html')
+if ‘user’ in session:
+return redirect(url_for(‘index’))
+return render_template(‘login.html’)
 
-@app.route('/driver')
+@app.route(’/driver’)
 def driver_page():
-    return render_template('driver.html')
+return render_template(‘driver.html’)
 
-@app.route('/admin')
+@app.route(’/admin’)
 def admin_page():
-    return render_template('admin.html')
+return render_template(‘admin.html’)
 
 # ── Auth ───────────────────────────────────────────────────
-@app.route('/login', methods=['POST'])
+
+@app.route(’/login’, methods=[‘POST’])
 def login():
-    data   = request.json
-    name   = data.get('name', '').strip()
-    matric = data.get('matric', '').strip().upper()
-    faculty = data.get('faculty', '').strip()
+data    = request.json or {}
+name    = data.get(‘name’, ‘’).strip()
+matric  = data.get(‘matric’, ‘’).strip().upper()
+faculty = data.get(‘faculty’, ‘’).strip()
 
-    if not name or not matric:
-        return jsonify({"status": "error", "message": "Name and matric required."}), 400
-    if not matric.startswith('U'):
-        return jsonify({"status": "error", "message": "Invalid matric. Must start with U."}), 400
+```
+if not name or not matric:
+    return jsonify({"status": "error", "message": "Name and matric number are required."}), 400
+if not matric.startswith('U'):
+    return jsonify({"status": "error", "message": "Invalid matric. Must start with U (e.g. U22CS1082)."}), 400
 
-    session['user']    = name
-    session['matric']  = matric
-    session['faculty'] = faculty
-    return jsonify({"status": "success", "name": name, "matric": matric})
+conn = get_db()
+# Upsert user record
+conn.execute(
+    "INSERT INTO users (name, matric, faculty) VALUES (?, ?, ?) ON CONFLICT(matric) DO UPDATE SET name=excluded.name, faculty=excluded.faculty",
+    (name, matric, faculty)
+)
+conn.commit()
+conn.close()
 
-@app.route('/api/logout')
+session['user']    = name
+session['matric']  = matric
+session['faculty'] = faculty
+return jsonify({"status": "success", "name": name, "matric": matric})
+```
+
+@app.route(’/api/logout’)
 def logout():
-    session.clear()
-    return redirect(url_for('login_page'))
+session.clear()
+return redirect(url_for(‘login_page’))
 
 # ── Booking ────────────────────────────────────────────────
-@app.route('/api/book', methods=['POST'])
+
+@app.route(’/api/book’, methods=[‘POST’])
+@login_required
 def book():
-    if 'user' not in session:
-        return jsonify({"error": "Not logged in."}), 401
+data        = request.json or {}
+pickup      = data.get(‘pickup’, ‘’).strip()
+destination = data.get(‘destination’, ‘’).strip()
+name        = session[‘user’]
+matric      = session[‘matric’]
 
-    data        = request.json
-    pickup      = data.get('pickup', '').strip()
-    destination = data.get('destination', '').strip()
-    name        = session['user']
-    matric      = session['matric']
+```
+if not pickup or not destination:
+    return jsonify({"error": "Please select pickup and destination."}), 400
+if pickup == destination:
+    return jsonify({"error": "Pickup and destination cannot be the same."}), 400
 
-    if not pickup or not destination:
-        return jsonify({"error": "Select pickup and destination."}), 400
-    if pickup == destination:
-        return jsonify({"error": "Pickup and destination cannot be the same."}), 400
+conn = get_db()
 
-    # Check existing active booking
-    existing = next((b for b in bookings if b['matric'] == matric and b['status'] in ('queued', 'assigned')), None)
-    if existing:
-        return jsonify({"error": "You already have an active booking."}), 400
+# Check for existing active booking
+existing = conn.execute(
+    "SELECT * FROM bookings WHERE matric=? AND status IN ('queued','assigned')",
+    (matric,)
+).fetchone()
+if existing:
+    conn.close()
+    return jsonify({"error": "You already have an active booking."}), 400
 
-    ticket_code = gen_ticket()
-    booking_id  = gen_id()
-    new_booking = {
-        "booking_id":   booking_id,
-        "ticket​​​​​​​​​​​​​​​​
+ticket_code = gen_ticket()
+booking_id  = gen_id()
+
+conn.execute(
+    """INSERT INTO bookings (booking_id, ticket_code, name, matric, pickup, destination, status)
+       VALUES (?, ?, ?, ?, ?, ?, 'queued')""",
+    (booking_id, ticket_code, name, matric, pickup, destination)
+)
+conn.commit()
+
+# Try to dispatch immediately
+process_simulation(conn)
+
+# Fetch updated booking
+booking = conn.execute(
+    "SELECT * FROM bookings WHERE booking_id=?", (booking_id,)
+).fetchone()
+conn.close()
+
+return jsonify({
+    "booking_id":   booking['booking_id'],
+    "ticket_code":  booking['ticket_code'],
+    "status":       booking['status'],
+    "pickup":       booking['pickup'],
+    "destination":  booking['destination'],
+    "tricycle":     booking['tricycle']
+})
+```
+
+# ── State (Student Dashboard) ──────────────────────────────
+
+@app.route(’/api/state’)
+@login_required
+def get_state():
+matric = session[‘matric’]
+conn   = get_db()
+process_simulation(conn)
+
+```
+# Fleet
+tricycle_rows = conn.execute("SELECT * FROM tricycles ORDER BY label").fetchall()
+fleet = [{"label": t['label'], "status": t['status'], "passenger": t['passenger'],
+          "route": t['route'], "ticket_code": t['ticket_code']} for t in tricycle_rows]
+
+# Personal booking
+booking = conn.execute(
+    "SELECT * FROM bookings WHERE matric=? AND status IN ('queued','assigned') ORDER BY created_at DESC LIMIT 1",
+    (matric,)
+).fetchone()
+
+personal = None
+if booking:
+    if booking['status'] == 'queued':
+        # Calculate queue position
+        position = conn.execute(
+            "SELECT count(*) FROM bookings WHERE status='queued' AND created_at <= ?",
+            (booking['created_at'],)
+        ).fetchone()[0]
+        personal = {
+            "status":   "queued",
+            "position": position,
+            "ticket":   dict(booking)
+        }
+    elif booking['status'] == 'assigned':
+        personal = {
+            "status":     "assigned",
+            "keke_label": booking['tricycle'],
+            "route":      f"{booking['pickup']} → {booking['destination']}",
+            "ticket":     dict(booking)
+        }
+
+avg_wait = calc_avg_wait(conn)
+conn.close()
+
+return jsonify({
+    "fleet":            fleet,
+    "personal_booking": personal,
+    "avg_wait":         avg_wait
+})
+```
+
+# ── Stats (Admin Dashboard) ────────────────────────────────
+
+@app.route(’/api/stats’)
+def get_stats():
+conn = get_db()
+process_simulation(conn)
+
+```
+total     = conn.execute("SELECT count(*) FROM bookings").fetchone()[0]
+completed = conn.execute("SELECT count(*) FROM bookings WHERE status='completed'").fetchone()[0]
+queued    = conn.execute("SELECT count(*) FROM bookings WHERE status='queued'").fetchone()[0]
+active    = conn.execute("SELECT count(*) FROM tricycles WHERE status='busy'").fetchone()[0]
+free      = conn.execute("SELECT count(*) FROM tricycles WHERE status='free'").fetchone()[0]
+avg_wait  = calc_avg_wait(conn)
+
+tricycle_rows = conn.execute("SELECT * FROM tricycles ORDER BY label").fetchall()
+tricycles_out = [{"label": t['label'], "status": t['status'], "passenger": t['passenger'],
+                  "route": t['route'], "ticket_code": t['ticket_code']} for t in tricycle_rows]
+
+conn.close()
+return jsonify({
+    "total_bookings":   total,
+    "completed_trips":  completed,
+    "currently_queued": queued,
+    "active_trips":     active,
+    "free_tricycles":   free,
+    "avg_wait":         avg_wait,
+    "tricycles":        tricycles_out
+})
+```
+
+# ── Status (Driver Panel fleet) ────────────────────────────
+
+@app.route(’/status’)
+def get_status():
+conn = get_db()
+process_simulation(conn)
+rows = conn.execute(“SELECT * FROM tricycles ORDER BY label”).fetchall()
+conn.close()
+tricycles_out = [{“label”: t[‘label’], “status”: t[‘status’], “passenger”: t[‘passenger’],
+“route”: t[‘route’], “ticket_code”: t[‘ticket_code’]} for t in rows]
+return jsonify({“tricycles”: tricycles_out})
+
+# ── Ticket Verification (Driver Panel) ────────────────────
+
+@app.route(’/verify/<ticket_code>’)
+def verify_ticket(ticket_code):
+conn    = get_db()
+booking = conn.execute(
+“SELECT * FROM bookings WHERE ticket_code=?”, (ticket_code.upper(),)
+).fetchone()
+conn.close()
+
+```
+if not booking:
+    return jsonify({"error": "Ticket not found."}), 404
+
+return jsonify({
+    "ticket_code": booking['ticket_code'],
+    "name":        booking['name'],
+    "matric":      booking['matric'],
+    "pickup":      booking['pickup'],
+    "destination": booking['destination'],
+    "status":      booking['status'],
+    "tricycle":    booking['tricycle']
+})
+```
+
+# ── Run ────────────────────────────────────────────────────
+
+if **name** == ‘**main**’:
+init_db()
+app.run(debug=True)
+
+# For Render / Gunicorn — init DB on import
+
+init_db()
