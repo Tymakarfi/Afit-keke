@@ -7,6 +7,7 @@ app = Flask(__name__)
 app.secret_key = "afit_secret_key_2024"
 
 TRIP_DURATION = 60
+ADMIN_PASSWORD = "Afit1234"
 
 def get_db():
     conn = sqlite3.connect("tricycle.db")
@@ -66,6 +67,14 @@ def login_required(f):
     def decorated(*args, **kwargs):
         if "user" not in session:
             return jsonify({"error": "Not logged in."}), 401
+        return f(*args, **kwargs)
+    return decorated
+
+def admin_required(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        if not session.get("admin"):
+            return redirect(url_for("admin_login_page"))
         return f(*args, **kwargs)
     return decorated
 
@@ -129,8 +138,27 @@ def driver_page():
     return render_template("driver.html")
 
 @app.route("/admin")
+@admin_required
 def admin_page():
     return render_template("admin.html")
+
+@app.route("/admin/login")
+def admin_login_page():
+    return render_template("admin_login.html")
+
+@app.route("/admin/login", methods=["POST"])
+def admin_login():
+    data = request.json or {}
+    password = data.get("password", "").strip()
+    if password == ADMIN_PASSWORD:
+        session["admin"] = True
+        return jsonify({"status": "success"})
+    return jsonify({"status": "error", "message": "Incorrect password."}), 401
+
+@app.route("/admin/logout")
+def admin_logout():
+    session.pop("admin", None)
+    return redirect(url_for("admin_login_page"))
 
 @app.route("/login", methods=["POST"])
 def login():
@@ -246,6 +274,7 @@ def get_state():
     return jsonify({"fleet": fleet, "personal_booking": personal, "avg_wait": avg_wait})
 
 @app.route("/api/stats")
+@admin_required
 def get_stats():
     conn = get_db()
     process_simulation(conn)
@@ -255,23 +284,19 @@ def get_stats():
     active = conn.execute("SELECT count(*) FROM tricycles WHERE status=?", ("busy",)).fetchone()[0]
     free = conn.execute("SELECT count(*) FROM tricycles WHERE status=?", ("free",)).fetchone()[0]
     avg_wait = calc_avg_wait(conn)
-
     tricycle_rows = conn.execute("SELECT * FROM tricycles ORDER BY label").fetchall()
     tricycles_out = [{"label": t["label"], "status": t["status"], "passenger": t["passenger"],
                       "route": t["route"], "ticket_code": t["ticket_code"]} for t in tricycle_rows]
-
     recent_rows = conn.execute(
         "SELECT * FROM bookings ORDER BY created_at DESC LIMIT 15"
     ).fetchall()
     recent_bookings = [{"name": b["name"], "matric": b["matric"], "pickup": b["pickup"],
                         "destination": b["destination"], "status": b["status"],
                         "ticket_code": b["ticket_code"], "tricycle": b["tricycle"]} for b in recent_rows]
-
     route_rows = conn.execute(
         "SELECT pickup || ' -> ' || destination AS route, count(*) AS count FROM bookings GROUP BY route ORDER BY count DESC LIMIT 5"
     ).fetchall()
     top_routes = [{"route": r["route"], "count": r["count"]} for r in route_rows]
-
     conn.close()
     return jsonify({
         "total_bookings": total,
