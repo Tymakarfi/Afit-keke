@@ -305,5 +305,5 @@ return jsonify({
 
 init_db()
 
-if __name__ == ‘__main__’:
+if **name** == ‘**main**’:
 app.run(debug=True)
