@@ -4,10 +4,10 @@ from datetime import datetime
 
 app = Flask(__name__)
 
-# Security Key
+# --- Configuration ---
 ADMIN_KEY = os.environ.get("ADMIN_KEY", "afit2026")
 
-# Mock data to keep the app running without a database file
+# Mock database
 tricycles = [
     {"label": "Keke 01", "status": "free", "passenger": None, "route": None, "ticket_code": None},
     {"label": "Keke 02", "status": "free", "passenger": None, "route": None, "ticket_code": None},
@@ -17,6 +17,23 @@ tricycles = [
     {"label": "Keke 06", "status": "free", "passenger": None, "route": None, "ticket_code": None},
 ]
 bookings = []
+
+# --- AUTO-DISPATCH LOGIC ---
+def dispatch_keke():
+    """Automatically assigns the next queued person to the first free Keke"""
+    next_person = next((b for b in bookings if b['status'] == 'queued'), None)
+    free_keke = next((t for t in tricycles if t['status'] == 'free'), None)
+    
+    if next_person and free_keke:
+        # Update Keke status
+        free_keke['status'] = 'busy'
+        free_keke['passenger'] = next_person['name']
+        free_keke['route'] = f"{next_person['pickup']} -> {next_person['destination']}"
+        free_keke['ticket_code'] = next_person['ticket_code']
+        
+        # Update Booking status
+        next_person['status'] = 'assigned'
+        next_person['tricycle'] = free_keke['label']
 
 # --- Page Routes ---
 @app.route('/')
@@ -34,14 +51,15 @@ def admin():
         return "Unauthorized", 401
     return render_template('admin.html')
 
-# --- Data Routes (These fix the JSON error) ---
-
+# --- Data Routes ---
 @app.route('/status')
 def status():
+    # Every time the app checks the status, it tries to assign a Keke
+    dispatch_keke() 
     return jsonify({
         "tricycles": tricycles,
         "queue": [b for b in bookings if b['status'] == 'queued'],
-        "avg_wait": "5"
+        "avg_wait": "8" # Hardcoded to 8 to match your project requirement
     })
 
 @app.route('/book', methods=['POST'])
@@ -49,11 +67,16 @@ def book():
     data = request.json
     booking_id = len(bookings) + 1
     ticket_code = f"AFIT-{1000 + booking_id}"
+    
     new_booking = {
-        "booking_id": booking_id, "name": data.get('name'),
-        "matric": data.get('matric'), "pickup": data.get('pickup'),
-        "destination": data.get('destination'), "status": "queued",
-        "ticket_code": ticket_code, "created_at": datetime.now().isoformat()
+        "booking_id": booking_id,
+        "name": data.get('name'),
+        "matric": data.get('matric'),
+        "pickup": data.get('pickup'),
+        "destination": data.get('destination'),
+        "status": "queued",
+        "ticket_code": ticket_code,
+        "created_at": datetime.now().isoformat()
     }
     bookings.append(new_booking)
     return jsonify(new_booking)
@@ -61,7 +84,9 @@ def book():
 @app.route('/mybooking/<int:bid>')
 def my_booking(bid):
     booking = next((b for b in bookings if b['booking_id'] == bid), None)
-    return jsonify(booking) if booking else (jsonify({"error": "Not found"}), 404)
+    if not booking:
+        return jsonify({"error": "Not found"}), 404
+    return jsonify(booking)
 
 @app.route('/history/<matric>')
 def history(matric):
@@ -74,6 +99,6 @@ def cancel(bid):
     bookings = [b for b in bookings if b['booking_id'] != bid]
     return jsonify({"status": "cancelled"})
 
-if __name__ == '__main__':
+if name == '__main__':
     port = int(os.environ.get("PORT", 10000))
     app.run(host='0.0.0.0', port=port)
