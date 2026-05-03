@@ -6,210 +6,192 @@
     <title>AFIT Smart-Keke — Student Portal</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
     <style>
-        :root { --primary: #3b82f6; --bg: #0b1120; --card: #1e293b; --text: #f8fafc; --muted: #94a3b8; }
-        body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; margin: 0; padding: 20px; line-height: 1.6; }
-        .container { max-width: 480px; margin: auto; }
+        :root { --primary: #3b82f6; --bg: #0b1120; --card: #1e293b; --text: #f8fafc; --muted: #94a3b8; --border: rgba(255,255,255,0.08); }
+        body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; margin: 0; padding: 20px; }
+        .container { max-width: 450px; margin: auto; }
         
-        /* Header */
-        header { text-align: center; margin-bottom: 30px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 15px; }
-        header h1 { font-size: 20px; letter-spacing: 2px; text-transform: uppercase; margin: 0; color: var(--primary); }
-        header p { font-size: 12px; color: var(--muted); margin: 5px 0 0; }
+        header { text-align: center; margin-bottom: 40px; padding-top: 20px; }
+        .logo-text { font-size: 22px; font-weight: 800; letter-spacing: 3px; color: var(--primary); text-transform: uppercase; margin: 0; }
+        .sub-text { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-top: 5px; }
 
-        /* General Card Styles */
-        .card { background: var(--card); padding: 24px; border-radius: 16px; margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.05); box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); }
-        h2 { font-size: 16px; margin-top: 0; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
+        .card { background: var(--card); padding: 25px; border-radius: 20px; border: 1px solid var(--border); margin-bottom: 20px; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2); }
+        
+        .input-group { margin-bottom: 20px; }
+        label { display: block; font-size: 10px; font-weight: 700; color: var(--muted); text-transform: uppercase; margin-bottom: 8px; letter-spacing: 1px; }
+        input, select { width: 100%; padding: 15px; border-radius: 12px; border: 1px solid #334155; background: #0f172a; color: white; font-size: 14px; box-sizing: border-box; }
+        
+        button { width: 100%; padding: 18px; background: var(--primary); border: none; border-radius: 12px; color: white; font-weight: 700; cursor: pointer; font-size: 15px; }
 
-        /* Form Elements */
-        label { display: block; font-size: 11px; text-transform: uppercase; color: var(--muted); font-weight: 700; margin-bottom: 5px; }
-        input, select { width: 100%; padding: 14px; margin-bottom: 15px; border-radius: 8px; border: 1px solid #334155; background: #0f172a; color: white; font-size: 14px; box-sizing: border-box; }
-        button { width: 100%; padding: 16px; background: var(--primary); border: none; border-radius: 8px; color: white; font-weight: 700; cursor: pointer; transition: 0.2s; font-size: 14px; }
-        button:hover { background: #2563eb; transform: translateY(-1px); }
+        .status-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .badge { padding: 6px 12px; border-radius: 8px; font-size: 10px; font-weight: 800; text-transform: uppercase; }
+        .status-queued { background: rgba(245, 158, 11, 0.1); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.2); }
+        .status-assigned { background: rgba(34, 197, 94, 0.1); color: #22c55e; border: 1px solid rgba(34, 197, 94, 0.2); }
+        .status-completed { background: rgba(148, 163, 184, 0.1); color: #94a3b8; border: 1px solid rgba(148, 163, 184, 0.2); }
+        
+        .ticket-display { background: rgba(255,255,255,0.03); border-radius: 15px; padding: 25px; text-align: center; border: 1px dashed #475569; margin: 20px 0; }
+        .ticket-num { font-size: 32px; font-weight: 700; letter-spacing: 2px; }
+        
+        .timer-display { text-align: center; padding: 20px 0; }
+        .timer-val { font-size: 64px; font-weight: 200; color: var(--primary); }
+        .timer-label { font-size: 11px; color: var(--muted); text-transform: uppercase; }
 
-        /* Status & Badges */
-        .badge { display: inline-block; padding: 6px 12px; border-radius: 6px; font-size: 11px; font-weight: 800; margin-bottom: 15px; text-transform: uppercase; }
-        .status-queued { background: rgba(245, 158, 11, 0.2); color: #f59e0b; }
-        .status-assigned { background: rgba(34, 197, 94, 0.2); color: #22c55e; }
-        .status-completed { background: rgba(148, 163, 184, 0.2); color: #94a3b8; }
-
-        /* Booking Details */
-        .ticket-box { background: rgba(255,255,255,0.03); padding: 20px; border-radius: 12px; text-align: center; margin: 15px 0; border: 1px dashed #475569; }
-        .ticket-label { font-size: 10px; color: var(--muted); }
-        .ticket-code { font-size: 28px; font-weight: 700; color: #fff; letter-spacing: 1px; }
-
-        .countdown { font-size: 56px; font-weight: 300; text-align: center; margin: 10px 0; color: var(--primary); }
-        .wait-stat { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 13px; }
-
-        /* Live Fleet Mini-Dashboard */
-        .fleet-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
-        .fleet-card { background: rgba(255,255,255,0.02); padding: 15px; border-radius: 10px; text-align: center; border: 1px solid rgba(255,255,255,0.05); }
-        .fleet-num { font-size: 20px; font-weight: 600; display: block; }
-        .fleet-lab { font-size: 9px; color: var(--muted); text-transform: uppercase; }
+        .stats-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 10px; }
+        .stat-item { background: rgba(255,255,255,0.03); padding: 15px; border-radius: 12px; text-align: center; border: 1px solid var(--border); }
+        .stat-val { font-size: 20px; font-weight: 600; display: block; }
+        .stat-lab { font-size: 9px; color: var(--muted); text-transform: uppercase; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <header>
-        <h1>AFIT Smart-Keke</h1>
-        <p>Air Force Institute of Technology — Transport Portal</p>
+        <div class="logo-text">AFIT SMART-KEKE</div>
+        <div class="sub-text">Intelligent Campus Dispatch System</div>
     </header>
 
-    <!-- Section 1: Live Fleet Overview -->
-    <div class="card" id="fleet-overview">
-        <h2>📡 Live System Status</h2>
-        <div class="fleet-grid">
-            <div class="fleet-card">
-                <span class="fleet-num" id="live-free">6</span>
-                <span class="fleet-lab">Available Kekes</span>
+    <!-- FLEET OVERVIEW -->
+    <div class="card" id="fleet-view">
+        <label>Live Fleet Status</label>
+        <div class="stats-row">
+            <div class="stat-item">
+                <span class="stat-val" id="keke-count">6</span>
+                <span class="stat-lab">Free Kekes</span>
             </div>
-            <div class="fleet-card">
-                <span class="fleet-num" id="live-wait">0</span>
-                <span class="fleet-lab">In Queue</span>
+            <div class="stat-item">
+                <span class="stat-val" id="queue-count">0</span>
+                <span class="stat-lab">In Queue</span>
             </div>
         </div>
     </div>
 
-    <!-- Section 2: Booking Form -->
-    <div id="booking-form-section" class="card">
-        <h2>📝 Request a Ride</h2>
-        <label>Personal Information</label>
-        <input type="text" id="name" placeholder="Full Name (e.g. John Doe)">
-        <input type="text" id="matric" placeholder="Matric No (e.g. AFIT/24/...)">
+    <!-- BOOKING FORM -->
+    <div id="booking-section" class="card">
+        <label>Student Credentials</label>
+        <div class="input-group">
+            <!-- Placeholders updated to generic names -->
+            <input type="text" id="name" placeholder="John Doe">
+        </div>
+        <div class="input-group">
+            <input type="text" id="matric" placeholder="AFIT/UG/26/0000">
+        </div>
         
-        <label>Trip Details</label>
+        <label>Route Configuration</label>
         <select id="pickup">
             <option value="Main Gate">Main Gate</option>
-            <option value="Library">Library</option>
-            <option value="Male Hostel">Male Hostel</option>
-            <option value="Female Hostel">Female Hostel</option>
+            <option value="Academic Area">Academic Area</option>
+            <option value="Hostel Gate">Hostel Gate</option>
         </select>
-        <select id="destination">
+        <select id="destination" style="margin-top:10px;">
             <option value="Admin Block">Admin Block</option>
             <option value="Civil Dept">Civil Dept</option>
-            <option value="Cyber Security Lab">Cyber Security Lab</option>
-            <option value="Mechanical Workshop">Mechanical Workshop</option>
+            <option value="Mechanical Lab">Mechanical Lab</option>
         </select>
-        <button onclick="submitBooking()">Initialize Dispatch</button>
+        
+        <button onclick="bookRide()" style="margin-top:20px;">Request Dispatch</button>
     </div>
 
-    <!-- Section 3: Live Status Card (Hidden by default) -->
-    <div id="status-card" class="card" style="display: none;">
-        <div id="status-body">
-            <!-- JavaScript populates this -->
-        </div>
+    <!-- STATUS CARD -->
+    <div id="status-section" class="card" style="display:none;">
+        <div id="status-content"></div>
     </div>
 </div>
 
 <script>
-    let myBooking = JSON.parse(localStorage.getItem('afit_booking')) || null;
-    let timerInterval = null;
-    let secondsLeft = 60;
+    let myBooking = JSON.parse(localStorage.getItem('afit_booking'));
+    let timerObj = null;
+    let timerSecs = 60;
 
-    // 1. Submit Booking to Backend
-    async function submitBooking() {
-        const name = document.getElementById('name').value;
-        const matric = document.getElementById('matric').value;
-
-        if(!name || !matric) return alert("Please fill in your details!");
-
-        const payload = {
-            name: name,
-            matric: matric,
-            pickup: document.getElementById('pickup').value,
-            destination: document.getElementById('destination').value
-        };
+    async function bookRide() {
+        const n = document.getElementById('name').value;
+        const m = document.getElementById('matric').value;
+        if(!n || !m) return alert("Credentials required");
 
         const res = await fetch('/book', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify(payload)
+            body: JSON.stringify({
+                name: n, matric: m,
+                pickup: document.getElementById('pickup').value,
+                destination: document.getElementById('destination').value
+            })
         });
-        
         myBooking = await res.json();
         localStorage.setItem('afit_booking', JSON.stringify(myBooking));
-        refreshUI();
+        updateView();
     }
 
-    // 2. Main UI Refresh Logic
-    async function refreshUI() {
-        // Always update the Live Fleet Overview
-        const statusRes = await fetch('/status');
-        const systemData = await statusRes.json();
-        document.getElementById('live-free').textContent = systemData.tricycles.filter(t => t.status === 'free').length;
-        document.getElementById('live-wait').textContent = systemData.queue_count;
+    async function updateView() {
+        const sRes = await fetch('/status');
+        const sData = await sRes.json();
+        document.getElementById('keke-count').textContent = sData.tricycles.filter(t => t.status === 'free').length;
+        document.getElementById('queue-count').textContent = sData.queue_count;
 
-        if (!myBooking) return;
+        if(!myBooking) return;
 
-        const res = await fetch(`/mybooking/${myBooking.booking_id}`);
-        const data = await res.json();
+        const bRes = await fetch(`/mybooking/${myBooking.booking_id}`);
+        const bData = await bRes.json();
 
-        const form = document.getElementById('booking-form-section');
-        const card = document.getElementById('status-card');
-        const body = document.getElementById('status-body');
+        document.getElementById('booking-section').style.display = 'none';
+        document.getElementById('status-section').style.display = 'block';
+        const content = document.getElementById('status-content');
 
-        form.style.display = "none";
-        card.style.display = "block";
-
-        if (data.status === "queued") {
-            body.innerHTML = `
-                <div class="badge status-queued">Awaiting Dispatch</div>
-                <div class="ticket-box">
-                    <span class="ticket-label">QUEUE POSITION</span>
-                    <div class="ticket-code">#${data.queue_position}</div>
+        if(bData.status === 'queued') {
+            content.innerHTML = `
+                <div class="status-header">
+                    <span class="badge status-queued">Awaiting Dispatch</span>
+                    <span style="font-size:12px; color:var(--muted)">#${bData.ticket_code}</span>
                 </div>
-                <div class="wait-stat"><span>Est. Wait Time:</span> <strong>${data.queue_position * 8} mins</strong></div>
-                <div class="wait-stat"><span>Status:</span> <span>Waiting for free Keke...</span></div>
-            `;
-        } 
-        else if (data.status === "assigned") {
-            body.innerHTML = `
-                <div class="badge status-assigned">Tricycle In Transit</div>
-                <div class="ticket-box">
-                    <span class="ticket-label">ASSIGNED VEHICLE</span>
-                    <div class="ticket-code">${data.tricycle}</div>
+                <div class="ticket-display">
+                    <div class="ticket-label">QUEUE POSITION</div>
+                    <div class="ticket-num">0${bData.queue_position}</div>
                 </div>
-                <div class="countdown" id="cd-val">${secondsLeft}</div>
-                <p style="text-align:center; color:var(--muted); font-size:12px;">Seconds remaining until destination arrival</p>
+                <p style="text-align:center; font-size:13px; color:var(--muted)">Est. Wait: <b>${bData.queue_position * 8} mins</b></p>
             `;
-            if (!timerInterval) startTimer();
-        } 
-        else if (data.status === "completed") {
-            clearInterval(timerInterval);
-            timerInterval = null;
-            body.innerHTML = `
-                <div class="badge status-completed">Destination Reached</div>
-                <h3 style="margin-top:0">Trip Successful</h3>
-                <p style="color:var(--muted); font-size:14px;">The tricycle has been released for the next student. Thank you for using AFIT Smart-Keke.</p>
-                <button onclick="resetApp()">New Booking</button>
+        } else if(bData.status === 'assigned') {
+            content.innerHTML = `
+                <div class="status-header">
+                    <span class="badge status-assigned">In Transit</span>
+                    <span style="font-size:12px; color:var(--muted)">#${bData.ticket_code}</span>
+                </div>
+                <div class="ticket-display">
+                    <div class="ticket-label">ASSIGNED KEKE</div>
+                    <div class="ticket-num">${bData.tricycle}</div>
+                </div>
+                <div class="timer-display">
+                    <div class="timer-val" id="t-val">${timerSecs}</div>
+                    <div class="timer-label">Seconds to Arrival</div>
+                </div>
+            `;
+            if(!timerObj) startTimer();
+        } else if(bData.status === 'completed') {
+            clearInterval(timerObj);
+            timerObj = null;
+            content.innerHTML = `
+                <div class="badge status-completed">Trip Finished</div>
+                <h2 style="margin: 15px 0 5px;">Destination Reached!</h2>
+                <p style="color:var(--muted); font-size:14px; margin-bottom:20px;">The Keke is now available for the next passenger.</p>
+                <button onclick="clearBooking()">Book New Ride</button>
             `;
         }
     }
 
-    // 3. 60-Second Timer Logic
     function startTimer() {
-        secondsLeft = 60;
-        if(timerInterval) clearInterval(timerInterval);
-        timerInterval = setInterval(() => {
-            secondsLeft--;
-            const el = document.getElementById('cd-val');
-            if (el) el.textContent = Math.max(0, secondsLeft);
-            
-            if (secondsLeft <= 0) {
-                clearInterval(timerInterval);
-                timerInterval = null;
-            }
+        timerSecs = 60;
+        timerObj = setInterval(() => {
+            timerSecs--;
+            const el = document.getElementById('t-val');
+            if(el) el.textContent = Math.max(0, timerSecs);
+            if(timerSecs <= 0) clearInterval(timerObj);
         }, 1000);
     }
 
-    function resetApp() {
+    function clearBooking() {
         localStorage.removeItem('afit_booking');
         location.reload();
     }
 
-    // Poll server every 4 seconds for status updates
-    setInterval(refreshUI, 4000);
-    if (myBooking) refreshUI();
+    setInterval(updateView, 4000);
+    if(myBooking) updateView();
 </script>
-
 </body>
 </html>
