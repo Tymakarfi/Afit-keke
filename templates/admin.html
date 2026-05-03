@@ -1,44 +1,163 @@
-<!DOCTYPE html>
-<html>
+!DOCTYPE html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AFIT Admin Dashboard</title>
     <style>
-        body { background: #0b1120; color: white; font-family: sans-serif; padding: 20px; }
-        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-        .stat-card { background: #161e2d; padding: 30px; border-radius: 12px; text-align: center; border-top: 4px solid #3b82f6; }
-        .stat-card.green { border-top-color: #22c55e; }
-        .stat-card.orange { border-top-color: #f59e0b; }
-        .val { font-size: 48px; font-weight: bold; display: block; margin-bottom: 10px; }
-        .label { font-size: 11px; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; }
+        :root {
+            --bg: #0b1120;
+            --card: #161e2d;
+            --blue: #3b82f6;
+            --gold: #f59e0b;
+            --green: #22c55e;
+            --red: #ef4444;
+            --text: #e2e8f0;
+            --dim: #94a3b8;
+            --border: rgba(255,255,255,0.08);
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { background: var(--bg); color: var(--text); font-family: Segoe UI, sans-serif; padding: 20px; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 28px; padding-bottom: 16px; border-bottom: 1px solid var(--border); }
+        .header h1 { font-size: 1.2rem; font-weight: 800; letter-spacing: 1px; }
+        .header a { color: var(--dim); text-decoration: none; font-size: 0.85rem; border: 1px solid var(--border); padding: 6px 14px; border-radius: 8px; }
+        .header a:hover { color: var(--blue); border-color: var(--blue); }
+
+        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 24px; }
+        .stat-card { background: var(--card); padding: 20px; border-radius: 14px; text-align: center; border-top: 3px solid var(--blue); }
+        .stat-card.green { border-top-color: var(--green); }
+        .stat-card.gold { border-top-color: var(--gold); }
+        .stat-card.red { border-top-color: var(--red); }
+        .stat-val { font-size: 2.8rem; font-weight: 900; display: block; margin-bottom: 6px; color: var(--blue); }
+        .stat-card.green .stat-val { color: var(--green); }
+        .stat-card.gold .stat-val { color: var(--gold); }
+        .stat-card.red .stat-val { color: var(--red); }
+        .stat-lbl { font-size: 0.65rem; color: var(--dim); text-transform: uppercase; letter-spacing: 1px; }
+
+        .section { background: var(--card); border-radius: 14px; padding: 18px; margin-bottom: 20px; border: 1px solid var(--border); }
+        .sec-title { font-size: 0.7rem; font-weight: 800; color: var(--blue); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 14px; padding-bottom: 10px; border-bottom: 1px solid var(--border); }
+
+        .fleet-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+        .keke-card { border-radius: 12px; padding: 12px 8px; text-align: center; border: 1px solid var(--border); }
+        .keke-free { background: rgba(34,197,94,0.06); border-color: rgba(34,197,94,0.3); }
+        .keke-busy { background: rgba(245,158,11,0.06); border-color: rgba(245,158,11,0.3); }
+        .keke-icon { font-size: 1.6rem; margin-bottom: 4px; }
+        .keke-name { font-size: 0.75rem; font-weight: 700; margin-bottom: 2px; }
+        .keke-status { font-size: 0.6rem; text-transform: uppercase; font-weight: 900; }
+        .keke-free .keke-status { color: var(--green); }
+        .keke-busy .keke-status { color: var(--gold); }
+        .keke-passenger { font-size: 0.65rem; color: var(--dim); margin-top: 4px; }
+        .keke-route { font-size: 0.6rem; color: var(--dim); margin-top: 2px; line-height: 1.4; }
+        .keke-ticket { font-size: 0.6rem; color: var(--gold); font-family: monospace; margin-top: 2px; }
+
+        .booking-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border); }
+        .booking-row:last-child { border-bottom: none; }
+        .booking-name { font-size: 0.85rem; font-weight: 700; }
+        .booking-matric { font-size: 0.7rem; color: var(--dim); }
+        .booking-route { font-size: 0.72rem; color: var(--dim); margin-top: 2px; }
+        .booking-ticket { font-size: 0.65rem; color: var(--gold); font-family: monospace; margin-top: 2px; }
+        .status-badge { padding: 3px 10px; border-radius: 20px; font-size: 0.6rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap; }
+        .badge-queued { background: rgba(245,158,11,0.15); color: var(--gold); border: 1px solid rgba(245,158,11,0.3); }
+        .badge-assigned { background: rgba(59,130,246,0.15); color: var(--blue); border: 1px solid rgba(59,130,246,0.3); }
+        .badge-completed { background: rgba(34,197,94,0.15); color: var(--green); border: 1px solid rgba(34,197,94,0.3); }
+        .badge-cancelled { background: rgba(239,68,68,0.15); color: var(--red); border: 1px solid rgba(239,68,68,0.3); }
+
+        .route-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--border); }
+        .route-row:last-child { border-bottom: none; }
+        .route-text { font-size: 0.82rem; font-weight: 600; }
+        .route-count { background: rgba(59,130,246,0.15); color: var(--blue); padding: 3px 10px; border-radius: 20px; font-size: 0.7rem; font-weight: 700; }
+
+        .empty { color: var(--dim); font-size: 0.85rem; text-align: center; padding: 20px 0; }
+        .live-dot { width: 8px; height: 8px; background: var(--green); border-radius: 50%; display: inline-block; margin-right: 6px; animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
     </style>
 </head>
 <body>
-    <div class="header">
-        <h1>📊 ADMIN DASHBOARD</h1>
-        <a href="/" style="color:#94a3b8; text-decoration:none;">← Student Portal</a>
-    </div>
+<div class="header">
+    <h1>ADMIN DASHBOARD</h1>
+    <a href="/">Student Portal</a>
+</div>
 
-    <div class="grid">
-        <div class="stat-card"><span class="val" id="total">0</span><span class="label">Total Bookings Today</span></div>
-        <div class="stat-card green"><span class="val" id="completed">0</span><span class="label">Trips Completed</span></div>
-        <div class="stat-card orange"><span class="val" id="queued">0</span><span class="label">Currently Queued</span></div>
-        <div class="stat-card"><span class="val" id="active">0</span><span class="label">Active Trips</span></div>
-        <div class="stat-card green"><span class="val" id="free">6</span><span class="label">Free Tricycles</span></div>
-        <div class="stat-card orange"><span class="val">8</span><span class="label">Avg Wait (Min)</span></div>
-    </div>
+<div class="stats-grid">
+    <div class="stat-card"><span class="stat-val" id="total">0</span><span class="stat-lbl">Total Bookings</span></div>
+    <div class="stat-card green"><span class="stat-val" id="completed">0</span><span class="stat-lbl">Trips Completed</span></div>
+    <div class="stat-card gold"><span class="stat-val" id="queued">0</span><span class="stat-lbl">Currently Queued</span></div>
+    <div class="stat-card"><span class="stat-val" id="active">0</span><span class="stat-lbl">Active Trips</span></div>
+    <div class="stat-card green"><span class="stat-val" id="free">0</span><span class="stat-lbl">Free Tricycles</span></div>
+    <div class="stat-card gold"><span class="stat-val" id="avgwait">0</span><span class="stat-lbl">Avg Wait (Min)</span></div>
+</div>
 
-    <script>
-        async function refresh() {
-            const res = await fetch('/api/stats');
-            const data = await res.json();
-            document.getElementById('total').innerText = data.total_bookings;
-            document.getElementById('completed').innerText = data.completed_trips;
-            document.getElementById('queued').innerText = data.currently_queued;
-            document.getElementById('active').innerText = data.active_trips;
-            document.getElementById('free').innerText = data.free_tricycles;
+<div class="section">
+    <div class="sec-title"><span class="live-dot"></span>Fleet Status</div>
+    <div class="fleet-grid" id="fleet"></div>
+</div>
+
+<div class="section">
+    <div class="sec-title">Recent Bookings</div>
+    <div id="bookings-list"><div class="empty">No bookings yet</div></div>
+</div>
+
+<div class="section">
+    <div class="sec-title">Top Routes Today</div>
+    <div id="routes-list"><div class="empty">No data yet</div></div>
+</div>
+
+<script>
+async function refresh() {
+    try {
+        const res = await fetch("/api/stats");
+        const d = await res.json();
+
+        document.getElementById("total").textContent = d.total_bookings;
+        document.getElementById("completed").textContent = d.completed_trips;
+        document.getElementById("queued").textContent = d.currently_queued;
+        document.getElementById("active").textContent = d.active_trips;
+        document.getElementById("free").textContent = d.free_tricycles;
+        document.getElementById("avgwait").textContent = d.avg_wait || 0;
+
+        document.getElementById("fleet").innerHTML = d.tricycles.map(t => {
+            const cls = t.status === "free" ? "keke-free" : "keke-busy";
+            const st = t.status === "free" ? "FREE" : "ON TRIP";
+            return "<div class='keke-card " + cls + "'>" +
+                "<div class='keke-icon'>&#128738;</div>" +
+                "<div class='keke-name'>" + t.label + "</div>" +
+                "<div class='keke-status'>" + st + "</div>" +
+                (t.passenger ? "<div class='keke-passenger'>" + t.passenger + "</div>" : "") +
+                (t.ticket_code ? "<div class='keke-ticket'>" + t.ticket_code + "</div>" : "") +
+                (t.route ? "<div class='keke-route'>" + t.route + "</div>" : "") +
+                "</div>";
+        }).join("");
+
+        if (d.recent_bookings && d.recent_bookings.length > 0) {
+            document.getElementById("bookings-list").innerHTML = d.recent_bookings.map(b => {
+                const badgeClass = "badge-" + b.status;
+                return "<div class='booking-row'>" +
+                    "<div>" +
+                        "<div class='booking-name'>" + b.name + "</div>" +
+                        "<div class='booking-matric'>" + b.matric + "</div>" +
+                        "<div class='booking-route'>" + b.pickup + " &rarr; " + b.destination + "</div>" +
+                        "<div class='booking-ticket'>" + b.ticket_code + "</div>" +
+                    "</div>" +
+                    "<span class='status-badge " + badgeClass + "'>" + b.status + "</span>" +
+                    "</div>";
+            }).join("");
+        } else {
+            document.getElementById("bookings-list").innerHTML = "<div class='empty'>No bookings yet</div>";
         }
-        setInterval(refresh, 2000);
-    </script>
+
+        if (d.top_routes && d.top_routes.length > 0) {
+            document.getElementById("routes-list").innerHTML = d.top_routes.map(r =>
+                "<div class='route-row'><span class='route-text'>" + r.route + "</span><span class='route-count'>" + r.count + " trip" + (r.count !== 1 ? "s" : "") + "</span></div>"
+            ).join("");
+        } else {
+            document.getElementById("routes-list").innerHTML = "<div class='empty'>No data yet</div>";
+        }
+
+    } catch(e) { console.error(e); }
+}
+
+setInterval(refresh, 3000);
+refresh();
+</script>
 </body>
 </html>
