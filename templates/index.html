@@ -19,7 +19,7 @@
         body {
             background-color: var(--bg-color);
             color: var(--text-main);
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             margin: 0;
             padding: 20px;
             display: flex;
@@ -40,18 +40,8 @@
             border-bottom: 1px solid var(--border);
         }
 
-        .logo {
-            font-weight: 800;
-            letter-spacing: 1px;
-            font-size: 1.2rem;
-        }
-
-        .logout-btn {
-            color: var(--accent-blue);
-            text-decoration: none;
-            font-size: 0.85rem;
-            font-weight: 600;
-        }
+        .logo { font-weight: 800; letter-spacing: 1px; font-size: 1.2rem; }
+        .logout-btn { color: var(--accent-blue); text-decoration: none; font-size: 0.85rem; font-weight: 600; }
 
         .card {
             background: var(--card-bg);
@@ -59,7 +49,6 @@
             border-radius: 18px;
             padding: 20px;
             margin-bottom: 20px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
         }
 
         .section-title {
@@ -69,11 +58,9 @@
             text-transform: uppercase;
             letter-spacing: 1.5px;
             margin-bottom: 15px;
-            display: flex;
-            align-items: center;
         }
 
-        /* Fleet Grid Styles */
+        /* Fleet Grid */
         .fleet-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
@@ -85,45 +72,15 @@
             border-radius: 12px;
             border: 1px solid var(--border);
             text-align: center;
-            transition: all 0.3s ease;
         }
 
-        .keke-name {
-            font-size: 0.75rem;
-            font-weight: 700;
-            margin-bottom: 4px;
-        }
+        .keke-name { font-size: 0.75rem; font-weight: 700; }
+        .keke-status { font-size: 0.6rem; text-transform: uppercase; font-weight: 900; }
 
-        .keke-status {
-            font-size: 0.6rem;
-            text-transform: uppercase;
-            font-weight: 900;
-        }
+        .free { background: rgba(72, 187, 120, 0.1); border-color: var(--success-green); color: var(--success-green); }
+        .busy { background: rgba(246, 173, 85, 0.1); border-color: var(--accent-gold); color: var(--accent-gold); }
 
-        .free {
-            background: rgba(72, 187, 120, 0.1);
-            border-color: var(--success-green);
-            color: var(--success-green);
-        }
-
-        .busy {
-            background: rgba(246, 173, 85, 0.1);
-            border-color: var(--accent-gold);
-            color: var(--accent-gold);
-        }
-
-        /* Form Styles */
-        .form-group {
-            margin-bottom: 15px;
-        }
-
-        label {
-            display: block;
-            font-size: 0.8rem;
-            color: var(--text-dim);
-            margin-bottom: 5px;
-        }
-
+        /* Form */
         select {
             width: 100%;
             padding: 12px;
@@ -131,8 +88,7 @@
             border: 1px solid var(--border);
             border-radius: 10px;
             color: white;
-            font-size: 0.95rem;
-            outline: none;
+            margin-bottom: 15px;
         }
 
         .btn-book {
@@ -143,36 +99,19 @@
             border: none;
             border-radius: 12px;
             font-weight: 800;
-            font-size: 1rem;
             cursor: pointer;
-            margin-top: 10px;
-            transition: transform 0.1s;
         }
 
-        .btn-book:active {
-            transform: scale(0.98);
-        }
-
-        /* Ticket Styles */
+        /* Ticket */
         .ticket-display {
             text-align: center;
-            padding: 30px 10px;
+            padding: 20px;
             border: 2px dashed var(--accent-blue);
-            border-radius: 15px;
             background: rgba(59, 130, 246, 0.05);
+            border-radius: 15px;
         }
 
-        .ticket-id {
-            font-size: 2rem;
-            font-weight: 900;
-            color: var(--accent-blue);
-            margin: 10px 0;
-        }
-
-        .ticket-info {
-            font-size: 0.8rem;
-            color: var(--text-dim);
-        }
+        .ticket-id { font-size: 2rem; font-weight: 900; color: var(--accent-blue); }
     </style>
 </head>
 <body>
@@ -183,59 +122,27 @@
         <a href="/api/logout" class="logout-btn">LOGOUT</a>
     </header>
 
-    <!-- Dynamic Status Area (Tickets show here) -->
     <div id="status-area"></div>
 
-    <!-- Fleet Monitoring Section -->
     <div class="card">
-        <div class="section-title">
-            <span style="margin-right: 8px;">🛺</span> Fleet Real-Time Status
-        </div>
-        <div class="fleet-grid" id="fleet-display">
-            <!-- JavaScript populates this -->
-        </div>
+        <div class="section-title">🛺 Fleet Status</div>
+        <div class="fleet-grid" id="fleet-display"></div>
     </div>
 
-    <!-- Booking Section -->
     <div class="card" id="booking-section">
-        <div class="section-title">
-            <span style="margin-right: 8px;">📝</span> Request a Ride
-        </div>
-        
-        <div class="form-group">
-            <label>Pick-up Point</label>
-            <select id="pickup">
-                <option value="" disabled selected>Select location</option>
-                <option>Main Gate</option>
-                <option>Academic Block</option>
-                <option>Library</option>
-                <option>Hostel A</option>
-                <option>Hostel B</option>
-                <option>Sports Complex</option>
-                <option>Clinic</option>
-                <option>Mess Hall</option>
-                <option>Admin Block</option>
-                <option>Engineering Lab</option>
-            </select>
-        </div>
-
-        <div class="form-group">
-            <label>Destination</label>
-            <select id="destination">
-                <option value="" disabled selected>Select location</option>
-                <option>Main Gate</option>
-                <option>Academic Block</option>
-                <option>Library</option>
-                <option>Hostel A</option>
-                <option>Hostel B</option>
-                <option>Sports Complex</option>
-                <option>Clinic</option>
-                <option>Mess Hall</option>
-                <option>Admin Block</option>
-                <option>Engineering Lab</option>
-            </select>
-        </div>
-
+        <div class="section-title">📝 Request a Ride</div>
+        <select id="pickup">
+            <option value="" disabled selected>Select Pickup</option>
+            <option>Main Gate</option><option>Academic Block</option><option>Library</option>
+            <option>Hostel A</option><option>Hostel B</option><option>Sports Complex</option>
+            <option>Clinic</option><option>Mess Hall</option><option>Admin Block</option><option>Engineering Lab</option>
+        </select>
+        <select id="destination">
+            <option value="" disabled selected>Select Destination</option>
+            <option>Main Gate</option><option>Academic Block</option><option>Library</option>
+            <option>Hostel A</option><option>Hostel B</option><option>Sports Complex</option>
+            <option>Clinic</option><option>Mess Hall</option><option>Admin Block</option><option>Engineering Lab</option>
+        </select>
         <button class="btn-book" onclick="submitBooking()">CONFIRM BOOKING</button>
     </div>
 </div>
@@ -244,78 +151,57 @@
     async function submitBooking() {
         const p = document.getElementById('pickup').value;
         const d = document.getElementById('destination').value;
+        if (!p || !d) return alert("Select locations");
 
-        if (!p || !d) {
-            alert("Please select both Pickup and Destination");
-            return;
-        }
-
-        const response = await fetch('/api/book', {
+        await fetch('/api/book', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({ pickup: p, destination: d })
         });
-
-        if (response.ok) {
-            updateDashboard();
-        }
+        updateDashboard();
     }
 
     async function updateDashboard() {
-        try {
-            const res = await fetch('/api/state');
-            const data = await res.json();
+        const res = await fetch('/api/state');
+        const data = await res.json();
 
-            // 1. Update Fleet Grid
-            const fleetHtml = data.fleet.map(keke => `
-                <div class="keke-unit ${keke.status}">
-                    <div class="keke-name">${keke.label}</div>
-                    <div class="keke-status">${keke.status}</div>
-                </div>
-            `).join('');
-            document.getElementById('fleet-display').innerHTML = fleetHtml;
+        // Update Fleet
+        document.getElementById('fleet-display').innerHTML = data.fleet.map(keke => `
+            <div class="keke-unit ${keke.status}">
+                <div class="keke-name">${keke.label}</div>
+                <div class="keke-status">${keke.status}</div>
+            </div>
+        `).join('');
 
-            // 2. Update Booking Status / Ticket
-            const statusArea = document.getElementById('status-area');
-            const bookingSection = document.getElementById('booking-section');
+        // Update Ticket/Status
+        const statusArea = document.getElementById('status-area');
+        const bookingSection = document.getElementById('booking-section');
 
-            if (data.personal_booking) {
-                bookingSection.style.display = 'none';
-                let content = '';
-                
-                if (data.personal_booking.status === 'queued') {
-                    content = `
-                        <div class="card ticket-display">
-                            <div class="section-title">Current Ticket</div>
-                            <div class="ticket-id">${data.personal_booking.ticket.ticket_code}</div>
-                            <div class="ticket-info">Queue Position: #${data.personal_booking.position}</div>
-                            <p style="font-size: 11px; margin-top: 10px;">Please wait at ${data.personal_booking.ticket.pickup}</p>
-                        </div>
-                    `;
-                } else {
-                    content = `
-                        <div class="card ticket-display" style="border-color: var(--success-green);">
-                            <div class="section-title" style="color: var(--success-green);">Ride Active</div>
-                            <div class="ticket-id" style="color: var(--success-green); font-size: 1.2rem;">${data.personal_booking.keke_label}</div>
-                            <div class="ticket-info">Route: ${data.personal_booking.route}</div>
-                        </div>
-                    `;
-                }
-                statusArea.innerHTML = content;
+        if (data.personal_booking) {
+            bookingSection.style.display = 'none';
+            if (data.personal_booking.status === 'queued') {
+                statusArea.innerHTML = `
+                    <div class="card ticket-display">
+                        <div class="section-title">Active Ticket</div>
+                        <div class="ticket-id">${data.personal_booking.ticket.ticket_code}</div>
+                        <div style="font-size: 0.8rem;">Position: #${data.personal_booking.position}</div>
+                    </div>`;
             } else {
-                bookingSection.style.display = 'block';
-                statusArea.innerHTML = '';
+                statusArea.innerHTML = `
+                    <div class="card ticket-display" style="border-color: var(--success-green);">
+                        <div class="section-title" style="color: var(--success-green);">Ride Active</div>
+                        <div class="ticket-id" style="color: var(--success-green); font-size: 1.2rem;">${data.personal_booking.keke_label}</div>
+                        <div style="font-size: 0.8rem;">Route: ${data.personal_booking.route}</div>
+                    </div>`;
             }
-        } catch (err) {
-            console.error("Sync error:", err);
+        } else {
+            bookingSection.style.display = 'block';
+            statusArea.innerHTML = '';
         }
     }
 
-    // Refresh every 3 seconds to show simulation updates
     setInterval(updateDashboard, 3000);
-    // Initial call
     updateDashboard();
 </script>
-
 </body>
 </html>
