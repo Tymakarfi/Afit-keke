@@ -1,92 +1,75 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>AFIT Keke — Admin Dashboard</title>
-  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;600&display=swap" rel="stylesheet"/>
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    body { background: #0b1120; color: #e2e8f0; font-family: 'Inter', sans-serif; min-height: 100vh; }
-    header { background: rgba(11,17,32,0.95); border-bottom: 1px solid rgba(255,255,255,0.09); padding: 0 28px; height: 60px; display: flex; align-items: center; justify-content: space-between; }
-    .h-title { font-family: 'Bebas Neue', sans-serif; font-size: 22px; letter-spacing: 0.1em; }
-    .h-sub { font-size: 10px; color: #64748b; letter-spacing: 0.15em; }
-    .back-btn { font-size: 12px; color: #64748b; text-decoration: none; border: 1px solid rgba(255,255,255,0.1); padding: 6px 14px; border-radius: 6px; }
-    .back-btn:hover { color: #3b82f6; border-color: #3b82f6; }
-    main { max-width: 1100px; margin: 28px auto; padding: 0 20px; }
-    .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 20px; }
-    .stat-card { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.09); border-radius: 12px; padding: 20px; text-align: center; }
-    .stat-num { font-family: 'Bebas Neue', sans-serif; font-size: 48px; line-height: 1; }
-    .stat-label { font-size: 11px; color: #64748b; letter-spacing: 0.1em; text-transform: uppercase; margin-top: 4px; }
-    .stat-blue { border-top: 3px solid #3b82f6; } .stat-blue .stat-num { color: #3b82f6; }
-    .stat-green { border-top: 3px solid #22c55e; } .stat-green .stat-num { color: #22c55e; }
-    .stat-gold { border-top: 3px solid #f59e0b; } .stat-gold .stat-num { color: #f59e0b; }
-    .bottom-grid { display: grid; grid-template-columns: 1fr 1.5fr; gap: 20px; }
-    .card { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.09); border-radius: 12px; padding: 20px; }
-    .card-title { font-size: 10px; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase; color: #3b82f6; margin-bottom: 16px; padding-bottom: 10px; border-bottom: 1px solid rgba(59,130,246,0.15); }
-    .route-item { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
-    .route-bar-bg { flex: 1; background: rgba(255,255,255,0.06); border-radius: 4px; height: 8px; overflow: hidden; }
-    .route-bar { height: 100%; background: linear-gradient(90deg, #1e40af, #3b82f6); border-radius: 4px; transition: width 0.6s; }
-    .route-name { font-size: 11px; color: #94a3b8; width: 200px; }
-    .route-count { font-size: 12px; font-weight: 700; color: #3b82f6; width: 24px; text-align: right; }
-    .booking-row { display: flex; align-items: center; gap: 10px; padding: 9px 0; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 12px; }
-    .booking-row:last-child { border-bottom: none; }
-    .b-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
-    .s-queued { background: #3b82f6; } .s-assigned { background: #f59e0b; } .s-completed { background: #22c55e; } .s-cancelled { background: #ef4444; }
-    .b-name { font-weight: 600; width: 120px; }
-    .b-route { color: #64748b; flex: 1; }
-    .b-ticket { font-family: monospace; color: #f59e0b; font-size: 11px; }
-    @media (max-width: 700px) { .stats-grid { grid-template-columns: 1fr 1fr; } .bottom-grid { grid-template-columns: 1fr; } }
-  </style>
+    <meta charset="UTF-8">
+    <title>AFIT Keke — Admin Dashboard</title>
+    <style>
+        body { font-family: 'Inter', sans-serif; background: #0b1120; color: #e2e8f0; padding: 20px; }
+        .container { max-width: 1000px; margin: auto; }
+        h1 { color: #3b82f6; border-bottom: 2px solid #1e293b; padding-bottom: 10px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; background: rgba(255,255,255,0.05); }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #1e293b; }
+        th { color: #64748b; font-size: 12px; text-transform: uppercase; }
+        .status-queued { color: #f59e0b; font-weight: bold; }
+        .status-assigned { color: #22c55e; font-weight: bold; }
+        .refresh-tag { font-size: 10px; color: #64748b; float: right; }
+    </style>
 </head>
 <body>
-<header>
-  <div>
-    <div class="h-title">📊 Admin Dashboard</div>
-    <div class="h-sub">AFIT Smart-Keke — Management View</div>
-  </div>
-  <a href="/login" class="back-btn">← Student Portal</a>
-</header>
-<main>
-  <div class="stats-grid">
-    <div class="stat-card stat-blue"><div class="stat-num" id="s-total">0</div><div class="stat-label">Total Bookings Today</div></div>
-    <div class="stat-card stat-green"><div class="stat-num" id="s-completed">0</div><div class="stat-label">Trips Completed</div></div>
-    <div class="stat-card stat-gold"><div class="stat-num" id="s-queued">0</div><div class="stat-label">Currently Queued</div></div>
-    <div class="stat-card stat-blue"><div class="stat-num" id="s-active">0</div><div class="stat-label">Active Trips</div></div>
-    <div class="stat-card stat-green"><div class="stat-num" id="s-free">0</div><div class="stat-label">Free Tricycles</div></div>
-    <div class="stat-card stat-gold"><div class="stat-num" id="s-wait">0</div><div class="stat-label">Avg Wait (min)</div></div>
-  </div>
-  <div class="bottom-grid">
-    <div class="card">
-      <div class="card-title">📍 Top Routes Today</div>
-      <div id="routes-list"><div style="color:#475569;font-size:13px">No data yet</div></div>
+    <div class="container">
+        <span class="refresh-tag" id="last-update">Updating...</span>
+        <h1>🛺 Fleet Control Center</h1>
+        
+        <table>
+            <thead>
+                <tr>
+                    <th>Ticket</th>
+                    <th>Student Name</th>
+                    <th>Route</th>
+                    <th>Status</th>
+                    <th>Assigned Keke</th>
+                </tr>
+            </thead>
+            <tbody id="admin-table-body">
+                <tr><td colspan="5">Loading live data...</td></tr>
+            </tbody>
+        </table>
     </div>
-    <div class="card">
-      <div class="card-title">🕐 Recent Bookings</div>
-      <div id="recent-list"><div style="color:#475569;font-size:13px">No bookings yet</div></div>
-    </div>
-  </div>
-</main>
-<script>
-  async function refresh() {
-    const res = await fetch("/admin/stats");
-    const d = await res.json();
-    document.getElementById("s-total").textContent = d.total_today;
-    document.getElementById("s-completed").textContent = d.completed_today;
-    document.getElementById("s-queued").textContent = d.queued_now;
-    document.getElementById("s-active").textContent = d.active_now;
-    document.getElementById("s-free").textContent = d.free_tricycles;
-    document.getElementById("s-wait").textContent = d.avg_wait;
-    const maxTrips = d.top_routes.length ? d.top_routes[0].trips : 1;
-    document.getElementById("routes-list").innerHTML = d.top_routes.length
-      ? d.top_routes.map(r => `<div class="route-item"><div class="route-name">${r.route}</div><div class="route-bar-bg"><div class="route-bar" style="width:${(r.trips/maxTrips*100)}%"></div></div><div class="route-count">${r.trips}</div></div>`).join("")
-      : '<div style="color:#475569;font-size:13px">No trips yet today</div>';
-    document.getElementById("recent-list").innerHTML = d.recent_bookings.length
-      ? d.recent_bookings.map(b => `<div class="booking-row"><div class="b-dot s-${b.status}"></div><div class="b-name">${b.name}</div><div class="b-route">${b.pickup} → ${b.destination}</div><div class="b-ticket">${b.ticket_code}</div></div>`).join("")
-      : '<div style="color:#475569;font-size:13px">No bookings yet</div>';
-  }
-  refresh();
-  setInterval(refresh, 5000);
-</script>
+
+    <script>
+        // The key must match the ADMIN_KEY in your app.py
+        const ADMIN_KEY = "afit2026";
+
+        async function refreshAdminDashboard() {
+            try {
+                const res = await fetch(`/admin/all_data?key=${ADMIN_KEY}`);
+                if (!res.ok) throw new Error("Unauthorized");
+                
+                const data = await res.json();
+                const tableBody = document.getElementById('admin-table-body');
+                
+                if (data.bookings.length === 0) {
+                    tableBody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:40px;">No active bookings in system.</td></tr>';
+                } else {
+                    tableBody.innerHTML = data.bookings.map(b => `
+                        <tr>
+                            <td><code>${b.ticket_code}</code></td>
+                            <td>${b.name}</td>
+                            <td>${b.pickup} → ${b.destination}</td>
+                            <td><span class="status-${b.status}">${b.status.toUpperCase()}</span></td>
+                            <td>${b.tricycle || '—'}</td>
+                        </tr>
+                    `).join('');
+                }
+                document.getElementById('last-update').textContent = "Last sync: " + new Date().toLocaleTimeString();
+            } catch (err) {
+                document.getElementById('admin-table-body').innerHTML = '<tr><td colspan="5" style="color:red; text-align:center;">Error: ' + err.message + '. Ensure URL includes ?key=afit2026</td></tr>';
+            }
+        }
+
+        // Auto-refresh every 5 seconds
+        setInterval(refreshAdminDashboard, 5000);
+        refreshAdminDashboard();
+    </script>
 </body>
 </html>
