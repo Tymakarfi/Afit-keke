@@ -1,88 +1,78 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>AFIT Student Login</title>
-  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;600&display=swap" rel="stylesheet"/>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AFIT Smart-Keke - Login</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
   <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    body { min-height: 100vh; background: #0b1120; font-family: 'Inter', sans-serif; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; }
-    body::before { content: ''; position: fixed; inset: 0; background-image: linear-gradient(rgba(30,64,175,0.07) 1px, transparent 1px), linear-gradient(90deg, rgba(30,64,175,0.07) 1px, transparent 1px); background-size: 40px 40px; animation: gridMove 20s linear infinite; }
-    @keyframes gridMove { from { transform: translateY(0); } to { transform: translateY(40px); } }
-    .container { position: relative; z-index: 10; width: 100%; max-width: 400px; padding: 20px; }
-    .logo-area { text-align: center; margin-bottom: 32px; }
-    .logo-icon { font-size: 48px; display: block; margin-bottom: 8px; }
-    .logo-title { font-family: 'Bebas Neue', sans-serif; font-size: 36px; letter-spacing: 0.12em; color: #fff; }
-    .logo-sub { font-size: 11px; color: #64748b; letter-spacing: 0.2em; text-transform: uppercase; margin-top: 4px; }
-    .card { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 36px; backdrop-filter: blur(20px); }
-    .card-title { font-size: 13px; font-weight: 600; letter-spacing: 0.15em; text-transform: uppercase; color: #3b82f6; margin-bottom: 24px; padding-bottom: 12px; border-bottom: 1px solid rgba(59,130,246,0.2); }
-    .field { margin-bottom: 16px; }
-    .field label { display: block; font-size: 10px; font-weight: 600; letter-spacing: 0.15em; text-transform: uppercase; color: #64748b; margin-bottom: 6px; }
-    .field input, .field select { width: 100%; padding: 12px 16px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: #e2e8f0; font-size: 14px; font-family: 'Inter', sans-serif; outline: none; transition: border-color 0.2s; }
-    .field input:focus, .field select:focus { border-color: #3b82f6; background: rgba(59,130,246,0.08); }
-    .field select { cursor: pointer; }
-    .field select option { background: #1e293b; }
-    .btn { width: 100%; padding: 14px; background: linear-gradient(135deg, #1e40af, #3b82f6); border: none; border-radius: 8px; color: white; font-family: 'Bebas Neue', sans-serif; font-size: 18px; letter-spacing: 0.15em; cursor: pointer; margin-top: 8px; transition: opacity 0.2s, transform 0.1s; }
-    .btn:hover { opacity: 0.9; transform: translateY(-1px); }
-    .error { background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3); color: #fca5a5; padding: 10px 14px; border-radius: 8px; font-size: 13px; margin-bottom: 16px; display: none; }
-    .footer-note { text-align: center; margin-top: 20px; font-size: 11px; color: #334155; }
-    .portal-link { display: block; text-align: center; margin-top: 12px; font-size: 12px; color: #475569; text-decoration: none; }
-    .portal-link:hover { color: #3b82f6; }
+    :root { --blue: #1e40af; --blue2: #3b82f6; --bg: #0b1120; --card: rgba(255,255,255,0.04); --border: rgba(255,255,255,0.09); --text: #e2e8f0; --muted: #64748b; }
+    body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; display: flex; align-items: center; justify-content: center; min-height: 100vh; margin: 0; }
+    .login-card { background: var(--card); border: 1px solid var(--border); padding: 40px; border-radius: 16px; width: 100%; max-width: 400px; text-align: center; backdrop-filter: blur(10px); }
+    .logo { font-size: 48px; margin-bottom: 10px; }
+    h1 { font-family: 'Bebas Neue', sans-serif; font-size: 32px; letter-spacing: 2px; margin: 0; }
+    p { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 30px; }
+    .field { text-align: left; margin-bottom: 20px; }
+    label { display: block; font-size: 10px; font-weight: 600; color: var(--muted); text-transform: uppercase; margin-bottom: 8px; }
+    input, select { width: 100%; padding: 12px; background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: 8px; color: #fff; outline: none; }
+    input:focus { border-color: var(--blue2); }
+    .btn { width: 100%; padding: 14px; background: linear-gradient(135deg, var(--blue), var(--blue2)); border: none; border-radius: 8px; color: #fff; font-family: 'Bebas Neue', sans-serif; font-size: 20px; cursor: pointer; margin-top: 10px; }
   </style>
 </head>
 <body>
-  <div class="container">
-    <div class="logo-area">
-      <span class="logo-icon">🛺</span>
-      <div class="logo-title">AFIT SMART-KEKE</div>
-      <div class="logo-sub">Campus Tricycle Booking System</div>
-    </div>
-    <div class="card">
-      <div class="card-title">Student Portal Access</div>
-      <div class="error" id="err-msg"></div>
-      <div class="field">
-        <label>Full Name</label>
-        <input id="n" type="text" placeholder="e.g. Tahir Makarfi"/>
-      </div>
-      <div class="field">
-        <label>Matric Number</label>
-        <input id="m" type="text" placeholder="e.g. U22CS1082"/>
-      </div>
-      <div class="field">
-        <label>Faculty</label>
-        <select id="f">
-          <option value="">-- Select Faculty --</option>
-          <option>Computing</option>
-          <option>Engineering</option>
-          <option>Science</option>
-          <option>Management</option>
-        </select>
-      </div>
-      <button class="btn" onclick="login()">ACCESS SYSTEM</button>
-    </div>
-    <a href="/driver" class="portal-link">🚗 Driver / Staff Portal →</a>
-    <a href="/admin" class="portal-link">📊 Admin Dashboard →</a>
-    <div class="footer-note">Air Force Institute of Technology, Kaduna</div>
+
+<div class="login-card">
+  <div class="logo">🛺</div>
+  <h1>AFIT SMART-KEKE</h1>
+  <p>Student Portal Access</p>
+  
+  <div class="field">
+    <label>Full Name</label>
+    <input type="text" id="l-name" placeholder="Enter Full Name">
   </div>
-  <script>
-    const saved = JSON.parse(localStorage.getItem("afit_user") || "null");
-    if (saved) { document.getElementById("n").value = saved.name || ""; document.getElementById("m").value = saved.matric || ""; }
-    async function login() {
-      const name = document.getElementById("n").value.trim();
-      const matric = document.getElementById("m").value.trim().toUpperCase();
-      const faculty = document.getElementById("f").value;
-      const err = document.getElementById("err-msg");
-      err.style.display = "none";
-      if (!name || !matric) { showErr("Please fill your name and matric number."); return; }
-      if (!matric.startsWith("U")) { showErr("Invalid Matric Number. Must start with U (e.g. U22CS1082)."); return; }
-      const res = await fetch("/auth", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name, matric, faculty }) });
-      const data = await res.json();
-      if (data.status === "success") { localStorage.setItem("afit_user", JSON.stringify({ name, matric, faculty })); window.location.href = "/"; }
-      else { showErr(data.message || "Login failed."); }
+  
+  <div class="field">
+    <label>Matric Number</label>
+    <input type="text" id="l-matric" placeholder="e.g. U22CS1082">
+  </div>
+  
+  <div class="field">
+    <label>Faculty</label>
+    <select id="l-faculty">
+      <option>Computing</option>
+      <option>Engineering</option>
+      <option>Management Sciences</option>
+    </select>
+  </div>
+  
+  <button class="btn" onclick="login()">ACCESS SYSTEM</button>
+</div>
+
+<script>
+  function login() {
+    const name = document.getElementById('l-name').value;
+    const matric = document.getElementById('l-matric').value;
+    const faculty = document.getElementById('l-faculty').value;
+
+    if (!name || !matric) {
+      alert("Please enter your name and matric number.");
+      return;
     }
-    function showErr(msg) { const el = document.getElementById("err-msg"); el.textContent = msg; el.style.display = "block"; }
-    document.addEventListener("keydown", e => { if (e.key === "Enter") login(); });
-  </script>
+
+    // This is the part that was likely missing:
+    const userData = {
+      name: name,
+      matric: matric,
+      faculty: faculty
+    };
+
+    // Save to the browser's memory
+    localStorage.setItem("afit_user", JSON.stringify(userData));
+
+    // Send the user back to the main page
+    window.location.href = "/";
+  }
+</script>
+
 </body>
 </html>
