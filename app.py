@@ -4,7 +4,7 @@ from datetime import datetime
 from functools import wraps
 
 app = Flask(**name**)
-app.secret_key = “afit_secret_key_2024”
+app.secret_key = "afit_secret_key_2024"
 
 TRIP_DURATION = 60
 
