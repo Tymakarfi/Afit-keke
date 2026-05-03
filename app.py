@@ -144,6 +144,8 @@ def admin_page():
 
 @app.route("/admin/login")
 def admin_login_page():
+    if session.get("admin"):
+        return redirect(url_for("admin_page"))
     return render_template("admin_login.html")
 
 @app.route("/admin/login", methods=["POST"])
@@ -274,8 +276,9 @@ def get_state():
     return jsonify({"fleet": fleet, "personal_booking": personal, "avg_wait": avg_wait})
 
 @app.route("/api/stats")
-@admin_required
 def get_stats():
+    if not session.get("admin"):
+        return jsonify({"error": "Unauthorized"}), 401
     conn = get_db()
     process_simulation(conn)
     total = conn.execute("SELECT count(*) FROM bookings").fetchone()[0]
