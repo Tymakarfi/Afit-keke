@@ -1,77 +1,204 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AFIT Smart-Keke - Login</title>
-  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
-  <style>
-    :root { --blue: #1e40af; --blue2: #3b82f6; --bg: #0b1120; --card: rgba(255,255,255,0.04); --border: rgba(255,255,255,0.09); --text: #e2e8f0; --muted: #64748b; }
-    body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; display: flex; align-items: center; justify-content: center; min-height: 100vh; margin: 0; }
-    .login-card { background: var(--card); border: 1px solid var(--border); padding: 40px; border-radius: 16px; width: 100%; max-width: 400px; text-align: center; backdrop-filter: blur(10px); }
-    .logo { font-size: 48px; margin-bottom: 10px; }
-    h1 { font-family: 'Bebas Neue', sans-serif; font-size: 32px; letter-spacing: 2px; margin: 0; }
-    p { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 30px; }
-    .field { text-align: left; margin-bottom: 20px; }
-    label { display: block; font-size: 10px; font-weight: 600; color: var(--muted); text-transform: uppercase; margin-bottom: 8px; }
-    input, select { width: 100%; padding: 12px; background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: 8px; color: #fff; outline: none; }
-    input:focus { border-color: var(--blue2); }
-    .btn { width: 100%; padding: 14px; background: linear-gradient(135deg, var(--blue), var(--blue2)); border: none; border-radius: 8px; color: #fff; font-family: 'Bebas Neue', sans-serif; font-size: 20px; cursor: pointer; margin-top: 10px; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AFIT Smart-Keke | Login</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root { 
+            --bg: #0b1120; 
+            --card: rgba(22, 30, 45, 0.7); 
+            --border: rgba(255, 255, 255, 0.1); 
+            --blue: #3b82f6; 
+            --text: #f8fafc; 
+            --muted: #94a3b8; 
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
+        
+        body { 
+            background: var(--bg); 
+            color: var(--text); 
+            min-height: 100vh; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            padding: 20px;
+            /* Simple background glow effect */
+            background-image: radial-gradient(circle at 50% 50%, #1e293b 0%, #0b1120 100%);
+        }
+
+        .portal-card { 
+            background: var(--card); 
+            border: 1px solid var(--border); 
+            border-radius: 28px; 
+            padding: 45px 35px; 
+            backdrop-filter: blur(12px); 
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
+        }
+
+        .logo-title { 
+            font-size: 24px; 
+            font-weight: 800; 
+            letter-spacing: 2px; 
+            color: #fff; 
+            margin-bottom: 4px; 
+        }
+
+        .logo-sub { 
+            font-size: 10px; 
+            color: var(--muted); 
+            text-transform: uppercase; 
+            letter-spacing: 1.5px; 
+            margin-bottom: 30px; 
+        }
+
+        .portal-header { 
+            font-size: 12px; 
+            font-weight: 700; 
+            color: var(--blue); 
+            text-transform: uppercase; 
+            letter-spacing: 1.5px; 
+            margin-bottom: 35px;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 15px;
+        }
+
+        .input-group { text-align: left; margin-bottom: 25px; }
+        
+        .input-group label { 
+            display: block; 
+            font-size: 10px; 
+            font-weight: 800; 
+            color: #fff; 
+            text-transform: uppercase; 
+            margin-bottom: 10px; 
+            letter-spacing: 1px; 
+        }
+        
+        input, select { 
+            width: 100%; 
+            padding: 16px; 
+            border-radius: 14px; 
+            border: 1px solid var(--border); 
+            background: rgba(255, 255, 255, 0.05); 
+            color: #fff; 
+            font-size: 14px; 
+            outline: none; 
+            transition: all 0.3s ease;
+        }
+
+        input::placeholder { color: rgba(255,255,255,0.2); }
+
+        input:focus, select:focus { 
+            border-color: var(--blue); 
+            background: rgba(255, 255, 255, 0.08);
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+        }
+
+        .btn-access { 
+            width: 100%; 
+            padding: 18px; 
+            background: var(--blue); 
+            border: none; 
+            border-radius: 14px; 
+            color: white; 
+            font-weight: 700; 
+            font-size: 14px; 
+            text-transform: uppercase; 
+            letter-spacing: 1px; 
+            cursor: pointer; 
+            margin-top: 10px; 
+            box-shadow: 0 10px 15px -3px rgba(59, 130, 246, 0.3);
+            transition: transform 0.2s;
+        }
+
+        .btn-access:active { transform: scale(0.98); }
+
+        .footer-text {
+            margin-top: 30px;
+            font-size: 9px;
+            color: var(--muted);
+            line-height: 1.4;
+        }
+    </style>
 </head>
 <body>
 
-<div class="login-card">
-  <div class="logo">🛺</div>
-  <h1>AFIT SMART-KEKE</h1>
-  <p>Student Portal Access</p>
-  
-  <div class="field">
-    <label>Full Name</label>
-    <input type="text" id="l-name" placeholder="Enter Full Name">
-  </div>
-  
-  <div class="field">
-    <label>Matric Number</label>
-    <input type="text" id="l-matric" placeholder="e.g. U22CS1082">
-  </div>
-  
-  <div class="field">
-    <label>Faculty</label>
-    <select id="l-faculty">
-      <option>Computing</option>
-      <option>Engineering</option>
-      <option>Management Sciences</option>
-    </select>
-  </div>
-  
-  <button class="btn" onclick="login()">ACCESS SYSTEM</button>
+<div class="portal-card">
+    <div class="logo-title">AFIT SMART-KEKE</div>
+    <div class="logo-sub">Campus Tricycle Booking System</div>
+    
+    <div class="portal-header">Student Portal Access</div>
+
+    <div class="input-group">
+        <label for="name">Full Name</label>
+        <input type="text" id="name" placeholder="e.g. Tahir Makarfi">
+    </div>
+
+    <div class="input-group">
+        <label for="matric">Matric Number</label>
+        <input type="text" id="matric" placeholder="e.g. U22CS1082">
+    </div>
+
+    <div class="input-group">
+        <label for="faculty">Faculty</label>
+        <select id="faculty">
+            <option value="Computing">Computing</option>
+            <option value="Engineering">Engineering</option>
+            <option value="Airship">Airship & Applied Sciences</option>
+            <option value="Management">Management Sciences</option>
+        </select>
+    </div>
+
+    <button class="btn-access" onclick="enterSystem()">Access System</button>
+
+    <div class="footer-text">
+        Air Force Institute of Technology, Kaduna<br>
+        Smart Campus Transport Management
+    </div>
 </div>
 
 <script>
-  function login() {
-    const name = document.getElementById('l-name').value;
-    const matric = document.getElementById('l-matric').value;
-    const faculty = document.getElementById('l-faculty').value;
+    async function enterSystem() {
+        const nameVal = document.getElementById('name').value.trim();
+        const matricVal = document.getElementById('matric').value.trim();
 
-    if (!name || !matric) {
-      alert("Please enter your name and matric number.");
-      return;
+        if (!nameVal || !matricVal) {
+            alert("Please provide both your name and matric number to continue.");
+            return;
+        }
+
+        try {
+            const response = await fetch('/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name: nameVal, matric: matricVal })
+            });
+
+            const data = await response.json();
+            if (data.status === "success") {
+                // This redirect is what gets you to the dashboard
+                window.location.href = "/";
+            } else {
+                alert("Login failed. Please try again.");
+            }
+        } catch (error) {
+            console.error("Login error:", error);
+            alert("Connection error. Check if your server is running.");
+        }
     }
 
-    // This is the part that was likely missing:
-    const userData = {
-      name: name,
-      matric: matric,
-      faculty: faculty
-    };
-
-    // Save to the browser's memory
-    localStorage.setItem("afit_user", JSON.stringify(userData));
-
-    // Send the user back to the main page
-    window.location.href = "/";
-  }
+    // Allow "Enter" key to submit the form
+    document.addEventListener('keypress', function (e) {
+        if (e.key === 'Enter') {
+            enterSystem();
+        }
+    });
 </script>
 
 </body>
