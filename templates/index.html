@@ -6,119 +6,133 @@
     <title>AFIT Smart-Keke — Student Portal</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
     <style>
-        :root { --bg: #0b1120; --card: #161e2d; --border: #2d3748; --gold: #f6ad55; --green: #48bb78; --blue: #63b3ed; --text: #f8fafc; --muted: #718096; }
-        body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; margin: 0; padding: 15px; }
-        .container { max-width: 450px; margin: auto; }
+        :root { --bg: #0b1120; --card: rgba(22, 30, 45, 0.7); --border: rgba(255, 255, 255, 0.1); --blue: #3b82f6; --text: #f8fafc; --muted: #94a3b8; }
+        body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; margin: 0; padding: 15px; min-height: 100vh; display: flex; align-items: center; justify-content: center; }
+        .container { width: 100%; max-width: 400px; }
 
-        /* Header */
-        header { display: flex; justify-content: space-between; align-items: start; margin-bottom: 25px; padding-top: 10px; }
-        .logo-area { display: flex; gap: 10px; align-items: center; }
-        .logo-text h1 { font-size: 18px; font-weight: 800; letter-spacing: 1px; margin: 0; }
-        .logo-text p { font-size: 10px; color: var(--muted); margin: 2px 0 0; text-transform: uppercase; }
-        .logout-btn { background: #1a202c; border: 1px solid var(--border); color: var(--text); padding: 5px 12px; border-radius: 6px; font-size: 11px; cursor: pointer; }
+        /* Login / Portal Style (Verbatim from image) */
+        .portal-card { background: var(--card); border: 1px solid var(--border); border-radius: 24px; padding: 40px 30px; backdrop-filter: blur(10px); box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); text-align: center; }
+        .logo-title { font-size: 26px; font-weight: 800; letter-spacing: 2px; color: #fff; margin-bottom: 5px; }
+        .logo-sub { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 30px; }
+        .portal-header { font-size: 12px; font-weight: 700; color: #60a5fa; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 35px; }
 
-        /* Section Styling */
-        .section-card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 20px; margin-bottom: 20px; }
-        .section-title { font-size: 10px; font-weight: 800; color: var(--blue); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 8px; }
+        .input-group { text-align: left; margin-bottom: 25px; }
+        .input-group label { display: block; font-size: 10px; font-weight: 800; color: #fff; text-transform: uppercase; margin-bottom: 10px; letter-spacing: 1px; }
+        
+        /* Glass Input Style */
+        input, select { 
+            width: 100%; padding: 16px; border-radius: 12px; border: 1px solid var(--border); 
+            background: rgba(255, 255, 255, 0.05); color: #fff; font-size: 14px; box-sizing: border-box; 
+            outline: none; transition: 0.3s;
+        }
+        input::placeholder { color: rgba(255,255,255,0.3); }
+        input:focus { border-color: var(--blue); background: rgba(255, 255, 255, 0.1); }
 
-        /* Queue List Styling */
-        .queue-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.03); font-size: 12px; }
-        .queue-ticket { font-weight: 700; color: var(--gold); }
-        .empty-msg { text-align: center; color: var(--muted); padding: 20px 0; font-size: 13px; }
+        .btn-access { 
+            width: 100%; padding: 18px; background: var(--blue); border: none; border-radius: 12px; 
+            color: white; font-weight: 700; font-size: 14px; text-transform: uppercase; 
+            letter-spacing: 1px; cursor: pointer; margin-top: 10px; box-shadow: 0 10px 20px -5px rgba(59, 130, 246, 0.4);
+        }
 
-        /* Fleet Grid */
+        /* Dashboard Styles (Hidden until Login) */
+        #main-dashboard { display: none; width: 100%; }
+        .section-card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 20px; margin-bottom: 15px; }
         .fleet-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
-        .keke-card { border-radius: 12px; padding: 15px 5px; text-align: center; background: rgba(255,255,255,0.02); }
-        .keke-card img { width: 24px; margin-bottom: 8px; filter: invert(80%) sepia(20%) saturate(1000%) hue-rotate(180deg); }
-        .keke-name { font-size: 11px; font-weight: 700; display: block; margin-bottom: 2px; }
-        .keke-status { font-size: 8px; font-weight: 900; text-transform: uppercase; margin-bottom: 4px; display: block; }
-        .keke-passenger { font-size: 8px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 4px; display: block; }
-        
-        .keke-busy { border: 1.5px solid var(--gold); }
-        .keke-busy .keke-status { color: var(--gold); }
-        .keke-busy img { filter: none; } /* Show original gold/yellow Keke color when busy */
-        
-        .keke-free { border: 1.5px solid var(--green); }
-        .keke-free .keke-status { color: var(--green); }
-
-        /* My Active Ticket Section */
-        .my-ticket-box { background: rgba(99, 179, 237, 0.05); border: 1px dashed var(--blue); border-radius: 12px; padding: 15px; text-align: center; margin-bottom: 20px; }
-        .ticket-label { font-size: 9px; color: var(--blue); font-weight: 800; text-transform: uppercase; }
-        .ticket-val { font-size: 24px; font-weight: 800; color: #fff; margin: 5px 0; letter-spacing: 1px; }
-
-        /* Form Controls */
-        input, select { width: 100%; padding: 12px; margin-bottom: 12px; border-radius: 8px; border: 1px solid var(--border); background: #0f172a; color: white; font-size: 13px; box-sizing: border-box; }
-        button.primary-btn { width: 100%; padding: 15px; background: #2b6cb0; border: none; border-radius: 8px; color: white; font-weight: 700; cursor: pointer; }
+        .keke-card { border-radius: 12px; padding: 15px 5px; text-align: center; background: rgba(255,255,255,0.02); border: 1px solid var(--border); }
+        .keke-busy { border-color: #f6ad55; color: #f6ad55; }
+        .keke-free { border-color: #48bb78; color: #48bb78; }
+        svg { width: 24px; height: 24px; fill: currentColor; margin-bottom: 5px; }
+        .keke-name { font-size: 10px; font-weight: 700; display: block; color: #fff; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <header>
-        <div class="logo-area">
-            <img src="https://cdn-icons-png.flaticon.com/512/1032/1032989.png" width="30" height="30">
-            <div class="logo-text">
-                <h1>AFIT SMART-KEKE</h1>
-                <p>Campus Transport System</p>
-            </div>
-        </div>
-        <div class="user-meta">
-            <button class="logout-btn" onclick="resetAll()">Logout</button>
-        </div>
-    </header>
+    <!-- LOGIN PORTAL (Exactly like image) -->
+    <div id="login-portal" class="portal-card">
+        <div class="logo-title">AFIT SMART-KEKE</div>
+        <div class="logo-sub">Campus Tricycle Booking System</div>
+        
+        <div class="portal-header">Student Portal Access</div>
 
-    <div id="personal-ticket-area" style="display: none;">
-        <div class="my-ticket-box">
-            <div class="ticket-label">Your Active Ticket</div>
-            <div class="ticket-val" id="my-ticket-code">---</div>
-            <div id="timer-text" style="font-size: 11px; color: var(--muted);">Waiting in queue...</div>
+        <div class="input-group">
+            <label>Full Name</label>
+            <input type="text" id="user-name" placeholder="e.g. John Doe">
         </div>
+
+        <div class="input-group">
+            <label>Matric Number</label>
+            <input type="text" id="user-matric" placeholder="e.g. AFIT/UG/26/0000">
+        </div>
+
+        <div class="input-group">
+            <label>Faculty</label>
+            <select id="user-faculty">
+                <option>Computing</option>
+                <option>Engineering</option>
+                <option>Airship & Labs</option>
+            </select>
+        </div>
+
+        <button class="btn-access" onclick="enterSystem()">Access System</button>
     </div>
 
-    <div class="section-card">
-        <div class="section-title">⌛ LIVE QUEUE (<span id="queue-count-num">0</span> WAITING)</div>
-        <div id="queue-list-container">
-            <div class="empty-msg">No passengers waiting</div>
+    <!-- MAIN DASHBOARD (Restored Fleet View) -->
+    <div id="main-dashboard">
+        <div class="section-card" style="text-align:center">
+            <div style="font-size:10px; color:var(--blue); font-weight:800; margin-bottom:10px;">ACTIVE SYSTEM SESSION</div>
+            <div id="display-name" style="font-size:18px; font-weight:700;"></div>
         </div>
-    </div>
 
-    <div class="section-card">
-        <div class="section-title">🛺 FLEET STATUS</div>
-        <div class="fleet-grid" id="fleet-grid">
-            </div>
-    </div>
+        <div class="section-card">
+            <div style="font-size:10px; font-weight:800; color:var(--blue); margin-bottom:15px;">🛺 FLEET STATUS</div>
+            <div class="fleet-grid" id="fleet-grid"></div>
+        </div>
 
-    <div id="booking-form-card" class="section-card">
-        <div class="section-title">📝 NEW BOOKING</div>
-        <input type="text" id="name" placeholder="John Doe">
-        <input type="text" id="matric" placeholder="AFIT/UG/26/0000">
-        <select id="pickup">
-            <option value="Main Gate">Main Gate</option>
-            <option value="Hostel Area">Hostel Area</option>
-            <option value="Library">Library</option>
-        </select>
-        <select id="destination">
-            <option value="Admin Block">Admin Block</option>
-            <option value="Civil Dept">Civil Dept</option>
-            <option value="Air Force Lab">Air Force Lab</option>
-        </select>
-        <button class="primary-btn" onclick="submitBooking()">Request Keke</button>
+        <div id="booking-area" class="section-card">
+            <div style="font-size:10px; font-weight:800; color:var(--blue); margin-bottom:15px;">📝 REQUEST DISPATCH</div>
+            <select id="pickup"><option>Main Gate</option><option>Hostel</option></select>
+            <select id="destination" style="margin-top:10px;"><option>Admin Block</option><option>Library</option></select>
+            <button class="btn-access" onclick="submitBooking()" style="margin-top:15px;">Book Keke</button>
+        </div>
+
+        <div id="active-ticket" class="section-card" style="display:none; text-align:center; border: 1px dashed var(--blue);">
+            <div style="font-size:10px; color:var(--blue); font-weight:800;">YOUR TICKET</div>
+            <div id="ticket-val" style="font-size:24px; font-weight:800; margin:10px 0;"></div>
+            <div id="status-text" style="font-size:11px; color:var(--muted);"></div>
+        </div>
     </div>
 </div>
 
 <script>
+    let session = JSON.parse(localStorage.getItem('afit_session'));
     let myBookingId = localStorage.getItem('afit_bid');
-    const tricycleIcon = "https://cdn-icons-png.flaticon.com/512/1032/1032989.png";
+    const kekeSvg = `<svg viewBox="0 0 24 24"><path d="M21,11C21,11 21,10.1 21,9C21,7.9 20.1,7 19,7H17L15.3,3.6C15.1,3.2 14.7,3 14.3,3H9.7C9.3,3 8.9,3.2 8.7,3.6L7,7H5C3.9,7 3,7.9 3,9C3,10.1 3,11 3,11H2V13H3V18H5V21H7V18H17V21H19V18H21V13H22V11H21M9.2,5H14.8L15.8,7H8.2L9.2,5M5,9H19V11H5V9M5,13H19V16H5V13Z" /></svg>`;
+
+    function enterSystem() {
+        const name = document.getElementById('user-name').value || "John Doe";
+        const matric = document.getElementById('user-matric').value || "AFIT/UG/26/0000";
+        session = { name, matric };
+        localStorage.setItem('afit_session', JSON.stringify(session));
+        checkSession();
+    }
+
+    function checkSession() {
+        if(session) {
+            document.getElementById('login-portal').style.display = 'none';
+            document.getElementById('main-dashboard').style.display = 'block';
+            document.getElementById('display-name').textContent = session.name;
+            updateDashboard();
+            setInterval(updateDashboard, 3000);
+        }
+    }
 
     async function submitBooking() {
-        const n = document.getElementById('name').value || "John Doe";
-        const m = document.getElementById('matric').value || "AFIT/UG/26/0000";
-        
         const res = await fetch('/book', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({
-                name: n, matric: m,
+                name: session.name, matric: session.matric,
                 pickup: document.getElementById('pickup').value,
                 destination: document.getElementById('destination').value
             })
@@ -133,58 +147,32 @@
         const res = await fetch('/status');
         const data = await res.json();
 
-        // Update Fleet Grid with Tricycle Icons
         const grid = document.getElementById('fleet-grid');
         grid.innerHTML = data.tricycles.map(t => `
             <div class="keke-card ${t.status === 'busy' ? 'keke-busy' : 'keke-free'}">
-                <img src="${tricycleIcon}">
+                ${kekeSvg}
                 <span class="keke-name">${t.label}</span>
-                <span class="keke-status">${t.status === 'busy' ? 'ON TRIP' : 'FREE'}</span>
-                <span class="keke-passenger">${t.passenger ? t.passenger : ''}</span>
+                <span style="font-size:8px; font-weight:800;">${t.status.toUpperCase()}</span>
             </div>
         `).join('');
-
-        document.getElementById('queue-count-num').textContent = data.queue_count;
-        const qList = document.getElementById('queue-list-container');
-        if (data.queue_count === 0) {
-            qList.innerHTML = '<div class="empty-msg">No passengers waiting</div>';
-        } else {
-            qList.innerHTML = Array(data.queue_count).fill(0).map((_, i) => `
-                <div class="queue-item">
-                    <span>Passenger #${i+1}</span>
-                    <span class="queue-ticket">WAITING</span>
-                </div>
-            `).join('');
-        }
 
         if (myBookingId) {
             const bRes = await fetch(`/mybooking/${myBookingId}`);
             const bData = await bRes.json();
-            
             if (bData.status === 'completed') {
-                resetAll();
+                localStorage.removeItem('afit_bid');
+                myBookingId = null;
+                location.reload();
             } else {
-                document.getElementById('booking-form-card').style.display = 'none';
-                document.getElementById('personal-ticket-area').style.display = 'block';
-                document.getElementById('my-ticket-code').textContent = bData.ticket_code;
-                
-                if (bData.status === 'assigned') {
-                    document.getElementById('timer-text').innerHTML = `Assigned to <b>${bData.tricycle}</b> - Arrival in progress`;
-                } else {
-                    document.getElementById('timer-text').textContent = `Position in line: #${bData.queue_position}`;
-                }
+                document.getElementById('booking-area').style.display = 'none';
+                document.getElementById('active-ticket').style.display = 'block';
+                document.getElementById('ticket-val').textContent = bData.ticket_code;
+                document.getElementById('status-text').textContent = bData.status === 'assigned' ? `ON TRIP WITH ${bData.tricycle}` : `QUEUED AT #${bData.queue_position}`;
             }
         }
     }
 
-    function resetAll() {
-        localStorage.removeItem('afit_bid');
-        myBookingId = null;
-        location.reload();
-    }
-
-    setInterval(updateDashboard, 3000);
-    updateDashboard();
+    checkSession();
 </script>
 </body>
 </html>
