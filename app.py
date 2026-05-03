@@ -1,50 +1,79 @@
 from flask import Flask, render_template, request, jsonify
 import os
+from datetime import datetime
 
 app = Flask(__name__)
 
-# Security: Set your admin key here
+# Security Key
 ADMIN_KEY = os.environ.get("ADMIN_KEY", "afit2026")
 
-# 1. HOME PAGE ROUTE
-# This handles the main URL: https://afit-keke-1.onrender.com/
+# Mock data to keep the app running without a database file
+tricycles = [
+    {"label": "Keke 01", "status": "free", "passenger": None, "route": None, "ticket_code": None},
+    {"label": "Keke 02", "status": "free", "passenger": None, "route": None, "ticket_code": None},
+    {"label": "Keke 03", "status": "free", "passenger": None, "route": None, "ticket_code": None},
+    {"label": "Keke 04", "status": "free", "passenger": None, "route": None, "ticket_code": None},
+    {"label": "Keke 05", "status": "free", "passenger": None, "route": None, "ticket_code": None},
+    {"label": "Keke 06", "status": "free", "passenger": None, "route": None, "ticket_code": None},
+]
+bookings = []
+
+# --- Page Routes ---
 @app.route('/')
 def index():
     return render_template('index.html')
 
-# 2. LOGIN PAGE ROUTE
-# This fixes the "GET /login 404" error seen in your logs
 @app.route('/login')
 def login():
     return render_template('login.html')
 
-# 3. ADMIN DASHBOARD ROUTE
-# Access via: https://afit-keke-1.onrender.com/admin?key=afit2026
 @app.route('/admin')
 def admin():
     key = request.args.get('key')
     if key != ADMIN_KEY:
-        return "Unauthorized: Invalid Admin Key", 401
+        return "Unauthorized", 401
     return render_template('admin.html')
 
-# 4. BOOKING DATA ROUTE
-# This handles the booking form submission from index.html
+# --- Data Routes (These fix the JSON error) ---
+
+@app.route('/status')
+def status():
+    return jsonify({
+        "tricycles": tricycles,
+        "queue": [b for b in bookings if b['status'] == 'queued'],
+        "avg_wait": "5"
+    })
+
 @app.route('/book', methods=['POST'])
 def book():
-    try:
-        data = request.json
-        # Here you would typically save 'data' to a database
-        return jsonify({"status": "success", "message": "Booking received!"}), 200
-    except Exception as e:
-        return jsonify({"status": "error", "message": str(e)}), 400
+    data = request.json
+    booking_id = len(bookings) + 1
+    ticket_code = f"AFIT-{1000 + booking_id}"
+    new_booking = {
+        "booking_id": booking_id, "name": data.get('name'),
+        "matric": data.get('matric'), "pickup": data.get('pickup'),
+        "destination": data.get('destination'), "status": "queued",
+        "ticket_code": ticket_code, "created_at": datetime.now().isoformat()
+    }
+    bookings.append(new_booking)
+    return jsonify(new_booking)
 
-# 5. DRIVER INTERFACE ROUTE (Optional)
-@app.route('/driver')
-def driver():
-    return render_template('driver.html')
+@app.route('/mybooking/<int:bid>')
+def my_booking(bid):
+    booking = next((b for b in bookings if b['booking_id'] == bid), None)
+    return jsonify(booking) if booking else (jsonify({"error": "Not found"}), 404)
 
-# RUN THE APP
-if __name__ == '__main__':
-    # '0.0.0.0' is required for Render to bind to the correct port
+@app.route('/history/<matric>')
+def history(matric):
+    user_history = [b for b in bookings if b['matric'] == matric]
+    return jsonify(user_history)
+
+@app.route('/cancel/<int:bid>', methods=['POST'])
+def cancel(bid):
+    global bookings
+    bookings = [b for b in bookings if b['booking_id'] != bid]
+    return jsonify({"status": "cancelled"})
+
+if name == '__main__':
     port = int(os.environ.get("PORT", 10000))
     app.run(host='0.0.0.0', port=port)
