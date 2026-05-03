@@ -3,182 +3,319 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AFIT Smart-Keke | Student Portal</title>
-    <!-- Google Fonts for a more premium look -->
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <title>AFIT Smart-Keke | Student Dashboard</title>
     <style>
         :root {
             --bg-color: #0b1120;
             --card-bg: #161e2d;
-            --card-border: #2d3748;
             --accent-blue: #3b82f6;
             --accent-gold: #f6ad55;
-            --accent-green: #48bb78;
+            --success-green: #48bb78;
             --text-main: #f8fafc;
-            --text-muted: #94a3b8;
+            --text-dim: #94a3b8;
+            --border: #2d3748;
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
-        body { background-color: var(--bg-color); color: var(--text-main); line-height: 1.6; padding-bottom: 50px; }
-        .container { max-width: 480px; margin: 0 auto; padding: 20px; }
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
 
-        /* Header & Navigation */
-        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; border-bottom: 1px solid var(--card-border); padding-bottom: 15px; }
-        .logo-box { display: flex; gap: 12px; align-items: center; }
-        .logo-text h1 { font-size: 18px; font-weight: 800; letter-spacing: 1px; color: #fff; line-height: 1; }
-        .logo-text span { font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 2px; }
-        .user-pill { text-align: right; }
-        .user-name { display: block; font-size: 13px; font-weight: 600; color: var(--text-main); }
-        .logout-link { font-size: 11px; color: var(--accent-blue); text-decoration: none; font-weight: 700; cursor: pointer; }
+        .dashboard-container {
+            width: 100%;
+            max-width: 480px;
+        }
 
-        /* Section Cards */
-        .section-card { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 20px; padding: 20px; margin-bottom: 20px; position: relative; overflow: hidden; }
-        .section-title { font-size: 11px; font-weight: 800; color: var(--accent-blue); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 18px; display: flex; align-items: center; gap: 8px; }
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--border);
+        }
 
-        /* Fleet Grid */
-        .fleet-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
-        .keke-card { background: rgba(255,255,255,0.02); border-radius: 14px; padding: 15px 5px; text-align: center; border: 1px solid transparent; transition: 0.3s ease; }
-        .keke-card.busy { border-color: var(--accent-gold); }
-        .keke-card.free { border-color: var(--accent-green); }
-        .keke-icon { width: 24px; height: 24px; margin-bottom: 8px; fill: currentColor; }
-        .keke-label { font-size: 11px; font-weight: 700; display: block; }
-        .status-badge { font-size: 8px; font-weight: 900; text-transform: uppercase; padding: 2px 6px; border-radius: 4px; display: inline-block; margin: 4px 0; }
-        .busy .status-badge { background: rgba(246, 173, 85, 0.1); color: var(--accent-gold); }
-        .free .status-badge { background: rgba(72, 187, 120, 0.1); color: var(--accent-green); }
-        .passenger-info { font-size: 8px; color: var(--text-muted); display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 5px; }
+        .logo {
+            font-weight: 800;
+            letter-spacing: 1px;
+            font-size: 1.2rem;
+        }
 
-        /* Queue List */
-        .queue-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
-        .queue-name { font-size: 13px; font-weight: 500; }
-        .queue-tag { font-size: 9px; font-weight: 700; background: #1e293b; padding: 4px 8px; border-radius: 5px; color: var(--accent-gold); }
-        .empty-state { text-align: center; color: var(--text-muted); padding: 20px 0; font-size: 13px; }
+        .logout-btn {
+            color: var(--accent-blue);
+            text-decoration: none;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
 
-        /* Booking Form */
-        .form-group { margin-bottom: 15px; }
-        .form-group label { display: block; font-size: 10px; font-weight: 800; color: #fff; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px; }
-        select, input { width: 100%; padding: 14px; border-radius: 12px; border: 1px solid var(--card-border); background: #0b1120; color: white; font-size: 14px; outline: none; appearance: none; }
-        select:focus { border-color: var(--accent-blue); }
-        .btn-submit { width: 100%; padding: 16px; background: var(--accent-gold); color: #000; border: none; border-radius: 12px; font-weight: 800; font-size: 14px; text-transform: uppercase; cursor: pointer; margin-top: 10px; transition: 0.2s; }
-        .btn-submit:hover { opacity: 0.9; transform: translateY(-1px); }
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 18px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
 
-        /* Footer Note */
-        .footer-note { text-align: center; font-size: 9px; color: #4a5568; margin-top: 40px; padding: 0 20px; line-height: 1.5; }
+        .section-title {
+            font-size: 0.7rem;
+            font-weight: 800;
+            color: var(--accent-blue);
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+        }
+
+        /* Fleet Grid Styles */
+        .fleet-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+        }
+
+        .keke-unit {
+            padding: 12px 5px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .keke-name {
+            font-size: 0.75rem;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .keke-status {
+            font-size: 0.6rem;
+            text-transform: uppercase;
+            font-weight: 900;
+        }
+
+        .free {
+            background: rgba(72, 187, 120, 0.1);
+            border-color: var(--success-green);
+            color: var(--success-green);
+        }
+
+        .busy {
+            background: rgba(246, 173, 85, 0.1);
+            border-color: var(--accent-gold);
+            color: var(--accent-gold);
+        }
+
+        /* Form Styles */
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            font-size: 0.8rem;
+            color: var(--text-dim);
+            margin-bottom: 5px;
+        }
+
+        select {
+            width: 100%;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            color: white;
+            font-size: 0.95rem;
+            outline: none;
+        }
+
+        .btn-book {
+            width: 100%;
+            padding: 15px;
+            background: var(--accent-gold);
+            color: #000;
+            border: none;
+            border-radius: 12px;
+            font-weight: 800;
+            font-size: 1rem;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: transform 0.1s;
+        }
+
+        .btn-book:active {
+            transform: scale(0.98);
+        }
+
+        /* Ticket Styles */
+        .ticket-display {
+            text-align: center;
+            padding: 30px 10px;
+            border: 2px dashed var(--accent-blue);
+            border-radius: 15px;
+            background: rgba(59, 130, 246, 0.05);
+        }
+
+        .ticket-id {
+            font-size: 2rem;
+            font-weight: 900;
+            color: var(--accent-blue);
+            margin: 10px 0;
+        }
+
+        .ticket-info {
+            font-size: 0.8rem;
+            color: var(--text-dim);
+        }
     </style>
 </head>
 <body>
 
-<div class="container">
+<div class="dashboard-container">
     <header>
-        <div class="logo-box">
-            <div class="logo-text">
-                <h1>AFIT SMART-KEKE</h1>
-                <span>Campus Transport System</span>
-            </div>
-        </div>
-        <div class="user-pill">
-            <span class="user-name">{{ session['user'] }}</span>
-            <a href="/logout" class="logout-link">Logout</a>
-        </div>
+        <div class="logo">AFIT SMART-KEKE</div>
+        <a href="/api/logout" class="logout-btn">LOGOUT</a>
     </header>
 
-    <!-- LIVE QUEUE SECTION -->
-    <div class="section-card">
+    <!-- Dynamic Status Area (Tickets show here) -->
+    <div id="status-area"></div>
+
+    <!-- Fleet Monitoring Section -->
+    <div class="card">
         <div class="section-title">
-            <span>⌛ LIVE QUEUE (<span id="queue-count">0</span> WAITING)</span>
+            <span style="margin-right: 8px;">🛺</span> Fleet Real-Time Status
         </div>
-        <div id="queue-display">
-            <div class="empty-state">No passengers currently waiting</div>
+        <div class="fleet-grid" id="fleet-display">
+            <!-- JavaScript populates this -->
         </div>
     </div>
 
-    <!-- FLEET STATUS SECTION -->
-    <div class="section-card">
+    <!-- Booking Section -->
+    <div class="card" id="booking-section">
         <div class="section-title">
-            <span>🛺 FLEET STATUS</span>
+            <span style="margin-right: 8px;">📝</span> Request a Ride
         </div>
-        <div class="fleet-grid" id="fleet-grid">
-            <!-- Grid will be populated by JS -->
-        </div>
-    </div>
-
-    <!-- BOOKING SECTION -->
-    <div id="booking-container" class="section-card">
-        <div class="section-title"><span>📝 NEW BOOKING</span></div>
+        
         <div class="form-group">
-            <label>Pickup Location</label>
+            <label>Pick-up Point</label>
             <select id="pickup">
+                <option value="" disabled selected>Select location</option>
                 <option>Main Gate</option>
                 <option>Academic Block</option>
                 <option>Library</option>
                 <option>Hostel A</option>
+                <option>Hostel B</option>
+                <option>Sports Complex</option>
+                <option>Clinic</option>
+                <option>Mess Hall</option>
+                <option>Admin Block</option>
+                <option>Engineering Lab</option>
             </select>
         </div>
+
         <div class="form-group">
             <label>Destination</label>
             <select id="destination">
-                <option>Engineering Lab</option>
-                <option>Admin Block</option>
+                <option value="" disabled selected>Select location</option>
+                <option>Main Gate</option>
+                <option>Academic Block</option>
+                <option>Library</option>
+                <option>Hostel A</option>
+                <option>Hostel B</option>
                 <option>Sports Complex</option>
                 <option>Clinic</option>
+                <option>Mess Hall</option>
+                <option>Admin Block</option>
+                <option>Engineering Lab</option>
             </select>
         </div>
-        <button class="btn-submit" onclick="handleBooking()">Book Now →</button>
-    </div>
 
-    <!-- ACTIVE TICKET DISPLAY (Hidden by default) -->
-    <div id="ticket-container" class="section-card" style="display: none; border: 2px dashed var(--accent-blue);">
-        <div class="section-title"><span>🎫 YOUR ACTIVE TICKET</span></div>
-        <div style="text-align: center; padding: 10px 0;">
-            <div id="ticket-code" style="font-size: 32px; font-weight: 800; letter-spacing: 2px;">AFIT-0000</div>
-            <div id="ticket-status" style="font-size: 12px; color: var(--accent-gold); margin-top: 5px; font-weight: 700;">ASSIGNING...</div>
-        </div>
-    </div>
-
-    <div class="footer-note">
-        Air Force Institute of Technology, Kaduna — Smart Campus Transport Management System<br>
-        &copy; 2026 Operations Research Project
+        <button class="btn-book" onclick="submitBooking()">CONFIRM BOOKING</button>
     </div>
 </div>
 
 <script>
-    const kekeIcon = `<svg class="keke-icon" viewBox="0 0 24 24"><path d="M21,11C21,11 21,10.1 21,9C21,7.9 20.1,7 19,7H17L15.3,3.6C15.1,3.2 14.7,3 14.3,3H9.7C9.3,3 8.9,3.2 8.7,3.6L7,7H5C3.9,7 3,7.9 3,9C3,10.1 3,11 3,11H2V13H3V18H5V21H7V18H17V21H19V18H21V13H22V11H21M9.2,5H14.8L15.8,7H8.2L9.2,5M5,9H19V11H5V9M5,13H19V16H5V13Z" /></svg>`;
+    async function submitBooking() {
+        const p = document.getElementById('pickup').value;
+        const d = document.getElementById('destination').value;
 
-    async function handleBooking() {
-        const res = await fetch('/book', {
+        if (!p || !d) {
+            alert("Please select both Pickup and Destination");
+            return;
+        }
+
+        const response = await fetch('/api/book', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({
-                pickup: document.getElementById('pickup').value,
-                destination: document.getElementById('destination').value
-            })
+            body: JSON.stringify({ pickup: p, destination: d })
         });
-        const data = await res.json();
-        localStorage.setItem('current_ticket', JSON.stringify(data));
-        updateDashboard();
+
+        if (response.ok) {
+            updateDashboard();
+        }
     }
 
     async function updateDashboard() {
-        const res = await fetch('/api/stats');
-        const data = await res.json();
+        try {
+            const res = await fetch('/api/state');
+            const data = await res.json();
 
-        // 1. Update Fleet Grid
-        const grid = document.getElementById('fleet-grid');
-        grid.innerHTML = data.tricycles.map(t => `
-            <div class="keke-card ${t.status === 'busy' ? 'busy' : 'free'}">
-                ${kekeIcon}
-                <span class="keke-label">${t.label}</span>
-                <span class="status-badge">${t.status}</span>
-                <span class="passenger-info">${t.passenger || '&nbsp;'}</span>
-            </div>
-        `).join('');
+            // 1. Update Fleet Grid
+            const fleetHtml = data.fleet.map(keke => `
+                <div class="keke-unit ${keke.status}">
+                    <div class="keke-name">${keke.label}</div>
+                    <div class="keke-status">${keke.status}</div>
+                </div>
+            `).join('');
+            document.getElementById('fleet-display').innerHTML = fleetHtml;
 
-        // 2. Update Queue
-        document.getElementById('queue-count').innerText = data.currently_queued;
-        // Logic to show/hide ticket and list queue items would go here
+            // 2. Update Booking Status / Ticket
+            const statusArea = document.getElementById('status-area');
+            const bookingSection = document.getElementById('booking-section');
+
+            if (data.personal_booking) {
+                bookingSection.style.display = 'none';
+                let content = '';
+                
+                if (data.personal_booking.status === 'queued') {
+                    content = `
+                        <div class="card ticket-display">
+                            <div class="section-title">Current Ticket</div>
+                            <div class="ticket-id">${data.personal_booking.ticket.ticket_code}</div>
+                            <div class="ticket-info">Queue Position: #${data.personal_booking.position}</div>
+                            <p style="font-size: 11px; margin-top: 10px;">Please wait at ${data.personal_booking.ticket.pickup}</p>
+                        </div>
+                    `;
+                } else {
+                    content = `
+                        <div class="card ticket-display" style="border-color: var(--success-green);">
+                            <div class="section-title" style="color: var(--success-green);">Ride Active</div>
+                            <div class="ticket-id" style="color: var(--success-green); font-size: 1.2rem;">${data.personal_booking.keke_label}</div>
+                            <div class="ticket-info">Route: ${data.personal_booking.route}</div>
+                        </div>
+                    `;
+                }
+                statusArea.innerHTML = content;
+            } else {
+                bookingSection.style.display = 'block';
+                statusArea.innerHTML = '';
+            }
+        } catch (err) {
+            console.error("Sync error:", err);
+        }
     }
 
+    // Refresh every 3 seconds to show simulation updates
     setInterval(updateDashboard, 3000);
+    // Initial call
     updateDashboard();
 </script>
+
 </body>
 </html>
