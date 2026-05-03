@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -7,300 +6,188 @@
     <title>AFIT Smart-Keke | Student Dashboard</title>
     <style>
         :root {
-            --bg-color: #0b1120;
-            --card-bg: #161e2d;
-            --accent-blue: #3b82f6;
-            --accent-gold: #f6ad55;
-            --success-green: #48bb78;
-            --text-main: #f8fafc;
-            --text-dim: #94a3b8;
+            --bg: #0b1120;
+            --card: #161e2d;
+            --blue: #3b82f6;
+            --gold: #f6ad55;
+            --green: #48bb78;
+            --text: #f8fafc;
+            --dim: #94a3b8;
             --border: #2d3748;
         }
-        body {
-            background-color: var(--bg-color);
-            color: var(--text-main);
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            margin: 0; padding: 20px;
-            display: flex; justify-content: center;
-        }
-        .dashboard-container { width: 100%; max-width: 480px; }
-        header {
-            display: flex; justify-content: space-between; align-items: center;
-            margin-bottom: 25px; padding-bottom: 15px;
-            border-bottom: 1px solid var(--border);
-        }
-        .logo { font-weight: 800; letter-spacing: 1px; font-size: 1.2rem; }
-        .logout-btn { color: var(--accent-blue); text-decoration: none; font-size: 0.85rem; font-weight: 600; }
-        .card {
-            background: var(--card-bg); border: 1px solid var(--border);
-            border-radius: 18px; padding: 20px; margin-bottom: 20px;
-        }
-        .section-title {
-            font-size: 0.7rem; font-weight: 800; color: var(--accent-blue);
-            text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 15px;
-        }
-        .fleet-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
-        .keke-unit {
-            padding: 12px 5px; border-radius: 12px;
-            border: 1px solid var(--border); text-align: center;
-        }
+        body { background: var(--bg); color: var(--text); font-family: Segoe UI, sans-serif; margin: 0; padding: 20px; display: flex; justify-content: center; }
+        .wrap { width: 100%; max-width: 480px; }
+        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; padding-bottom: 15px; border-bottom: 1px solid var(--border); }
+        .logo { font-weight: 800; font-size: 1.2rem; letter-spacing: 1px; }
+        .logout { color: var(--blue); text-decoration: none; font-size: 0.85rem; font-weight: 600; }
+        .card { background: var(--card); border: 1px solid var(--border); border-radius: 18px; padding: 20px; margin-bottom: 20px; }
+        .title { font-size: 0.7rem; font-weight: 800; color: var(--blue); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 15px; }
+        .fleet { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+        .keke { padding: 12px 5px; border-radius: 12px; border: 1px solid var(--border); text-align: center; }
         .keke-name { font-size: 0.75rem; font-weight: 700; }
-        .keke-status { font-size: 0.6rem; text-transform: uppercase; font-weight: 900; }
-        .free { background: rgba(72,187,120,0.1); border-color: var(--success-green); color: var(--success-green); }
-        .busy { background: rgba(246,173,85,0.1); border-color: var(--accent-gold); color: var(--accent-gold); }
-
-```
-    select {
-        width: 100%; padding: 12px;
-        background: #1e2a3a;
-        border: 1px solid #3b82f6;
-        border-radius: 10px;
-        color: #f8fafc;
-        margin-bottom: 15px;
-        font-size: 0.95rem;
-        appearance: none;
-        -webkit-appearance: none;
-        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%2394a3b8' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14L2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
-        background-repeat: no-repeat;
-        background-position: right 14px center;
-        cursor: pointer;
-    }
-    select option { background: #1e2a3a; color: #f8fafc; }
-    select:focus { outline: none; border-color: var(--accent-gold); box-shadow: 0 0 0 3px rgba(246,173,85,0.2); }
-
-    .btn-book {
-        width: 100%; padding: 15px;
-        background: var(--accent-gold); color: #000;
-        border: none; border-radius: 12px;
-        font-weight: 800; font-size: 1rem; cursor: pointer;
-        transition: opacity 0.2s, transform 0.1s;
-    }
-    .btn-book:hover { opacity: 0.9; transform: translateY(-1px); }
-    .btn-book:active { transform: scale(0.98); }
-    .btn-book:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
-
-    .ticket-display {
-        text-align: center; padding: 20px;
-        border: 2px dashed var(--accent-blue);
-        background: rgba(59,130,246,0.05); border-radius: 15px;
-    }
-    .ticket-id { font-size: 2rem; font-weight: 900; color: var(--accent-blue); letter-spacing: 2px; }
-    .ticket-label { font-size: 0.7rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }
-    .ticket-value { font-size: 0.9rem; font-weight: 600; margin-bottom: 4px; }
-
-    .queue-badge {
-        display: inline-block; padding: 4px 14px;
-        background: rgba(246,173,85,0.15); border: 1px solid var(--accent-gold);
-        border-radius: 20px; color: var(--accent-gold);
-        font-size: 0.75rem; font-weight: 700; margin-top: 8px;
-    }
-    .assigned-badge {
-        display: inline-block; padding: 4px 14px;
-        background: rgba(72,187,120,0.15); border: 1px solid var(--success-green);
-        border-radius: 20px; color: var(--success-green);
-        font-size: 0.75rem; font-weight: 700; margin-top: 8px;
-    }
-    .wait-info {
-        font-size: 0.78rem; color: var(--text-dim);
-        margin-top: 10px; line-height: 1.6;
-    }
-    .wait-time { color: var(--accent-gold); font-weight: 700; font-size: 1rem; }
-    .cancel-btn {
-        margin-top: 14px; padding: 10px 24px;
-        background: transparent; border: 1px solid #ef4444;
-        color: #ef4444; border-radius: 8px;
-        font-size: 0.8rem; font-weight: 700; cursor: pointer;
-    }
-    .cancel-btn:hover { background: rgba(239,68,68,0.1); }
-    .error-msg {
-        background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3);
-        color: #fca5a5; padding: 10px 14px; border-radius: 8px;
-        font-size: 0.8rem; margin-bottom: 12px; display: none;
-    }
-    .countdown {
-        font-size: 2.5rem; font-weight: 900; color: var(--success-green);
-        letter-spacing: 2px; margin: 8px 0;
-    }
-</style>
-```
-
+        .keke-st { font-size: 0.6rem; text-transform: uppercase; font-weight: 900; }
+        .free { background: rgba(72,187,120,0.1); border-color: var(--green); color: var(--green); }
+        .busy { background: rgba(246,173,85,0.1); border-color: var(--gold); color: var(--gold); }
+        select {
+            width: 100%; padding: 12px 36px 12px 12px;
+            background: #1a2540; border: 1px solid #3b5998;
+            border-radius: 10px; color: #f8fafc;
+            margin-bottom: 15px; font-size: 0.95rem;
+            appearance: none; -webkit-appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%2394a3b8' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14L2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat; background-position: right 14px center;
+            cursor: pointer;
+        }
+        select option { background: #1a2540; color: #f8fafc; }
+        select:focus { outline: none; border-color: var(--gold); }
+        .btn { width: 100%; padding: 15px; background: var(--gold); color: #000; border: none; border-radius: 12px; font-weight: 800; font-size: 1rem; cursor: pointer; }
+        .btn:hover { opacity: 0.9; }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .ticket-box { text-align: center; padding: 20px; border: 2px dashed var(--blue); background: rgba(59,130,246,0.05); border-radius: 15px; }
+        .ticket-code { font-size: 2rem; font-weight: 900; color: var(--blue); letter-spacing: 2px; }
+        .badge-q { display: inline-block; padding: 4px 14px; background: rgba(246,173,85,0.15); border: 1px solid var(--gold); border-radius: 20px; color: var(--gold); font-size: 0.75rem; font-weight: 700; margin-top: 8px; }
+        .badge-a { display: inline-block; padding: 4px 14px; background: rgba(72,187,120,0.15); border: 1px solid var(--green); border-radius: 20px; color: var(--green); font-size: 0.75rem; font-weight: 700; margin-top: 8px; }
+        .lbl { font-size: 0.7rem; color: var(--dim); text-transform: uppercase; letter-spacing: 1px; margin-top: 12px; margin-bottom: 4px; }
+        .val { font-size: 0.9rem; font-weight: 600; }
+        .wait { font-size: 0.78rem; color: var(--dim); margin-top: 10px; line-height: 1.7; }
+        .wt { color: var(--gold); font-weight: 700; font-size: 1rem; }
+        .cancel { margin-top: 14px; padding: 10px 24px; background: transparent; border: 1px solid #ef4444; color: #ef4444; border-radius: 8px; font-size: 0.8rem; font-weight: 700; cursor: pointer; }
+        .cancel:hover { background: rgba(239,68,68,0.1); }
+        .err { background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3); color: #fca5a5; padding: 10px 14px; border-radius: 8px; font-size: 0.8rem; margin-bottom: 12px; display: none; }
+    </style>
 </head>
 <body>
-<div class="dashboard-container">
+<div class="wrap">
     <header>
         <div class="logo">AFIT SMART-KEKE</div>
-        <a href="/api/logout" class="logout-btn">LOGOUT</a>
+        <a href="/api/logout" class="logout">LOGOUT</a>
     </header>
-
-```
-<div id="status-area"></div>
-
-<div class="card">
-    <div class="section-title">Fleet Status</div>
-    <div class="fleet-grid" id="fleet-display"></div>
+    <div id="status-area"></div>
+    <div class="card">
+        <div class="title">Fleet Status</div>
+        <div class="fleet" id="fleet"></div>
+    </div>
+    <div class="card" id="booking-section">
+        <div class="title">Request a Ride</div>
+        <div class="err" id="err"></div>
+        <select id="pickup">
+            <option value="" disabled selected>-- Select Pickup --</option>
+            <option>Main Gate</option>
+            <option>Academic Block</option>
+            <option>Library</option>
+            <option>Hostel A</option>
+            <option>Hostel B</option>
+            <option>Sports Complex</option>
+            <option>Clinic</option>
+            <option>Mess Hall</option>
+            <option>Admin Block</option>
+            <option>Engineering Lab</option>
+        </select>
+        <select id="destination">
+            <option value="" disabled selected>-- Select Destination --</option>
+            <option>Main Gate</option>
+            <option>Academic Block</option>
+            <option>Library</option>
+            <option>Hostel A</option>
+            <option>Hostel B</option>
+            <option>Sports Complex</option>
+            <option>Clinic</option>
+            <option>Mess Hall</option>
+            <option>Admin Block</option>
+            <option>Engineering Lab</option>
+        </select>
+        <button class="btn" id="book-btn" onclick="submitBooking()">CONFIRM BOOKING</button>
+    </div>
 </div>
-
-<div class="card" id="booking-section">
-    <div class="section-title">Request a Ride</div>
-    <div class="error-msg" id="err-msg"></div>
-    <select id="pickup">
-        <option value="" disabled selected>-- Select Pickup --</option>
-        <option>Main Gate</option>
-        <option>Academic Block</option>
-        <option>Library</option>
-        <option>Hostel A</option>
-        <option>Hostel B</option>
-        <option>Sports Complex</option>
-        <option>Clinic</option>
-        <option>Mess Hall</option>
-        <option>Admin Block</option>
-        <option>Engineering Lab</option>
-    </select>
-    <select id="destination">
-        <option value="" disabled selected>-- Select Destination --</option>
-        <option>Main Gate</option>
-        <option>Academic Block</option>
-        <option>Library</option>
-        <option>Hostel A</option>
-        <option>Hostel B</option>
-        <option>Sports Complex</option>
-        <option>Clinic</option>
-        <option>Mess Hall</option>
-        <option>Admin Block</option>
-        <option>Engineering Lab</option>
-    </select>
-    <button class="btn-book" id="book-btn" onclick="submitBooking()">CONFIRM BOOKING</button>
-</div>
-```
-
-</div>
-
 <script>
-    let countdown = null;
+let timer = null;
 
-    async function submitBooking() {
-        const p = document.getElementById('pickup').value;
-        const d = document.getElementById('destination').value;
-        const err = document.getElementById('err-msg');
-        err.style.display = 'none';
+async function submitBooking() {
+    const p = document.getElementById("pickup").value;
+    const d = document.getElementById("destination").value;
+    const err = document.getElementById("err");
+    err.style.display = "none";
+    if (!p || !d) { err.textContent = "Please select both pickup and destination."; err.style.display = "block"; return; }
+    if (p === d) { err.textContent = "Pickup and destination cannot be the same."; err.style.display = "block"; return; }
+    const btn = document.getElementById("book-btn");
+    btn.disabled = true; btn.textContent = "BOOKING...";
+    try {
+        const res = await fetch("/api/book", { method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({pickup: p, destination: d}) });
+        const data = await res.json();
+        if (data.error) { err.textContent = data.error; err.style.display = "block"; btn.disabled = false; btn.textContent = "CONFIRM BOOKING"; return; }
+        updateDashboard();
+    } catch(e) { err.textContent = "Connection error. Try again."; err.style.display = "block"; btn.disabled = false; btn.textContent = "CONFIRM BOOKING"; }
+}
 
-        if (!p || !d) { showError('Please select both pickup and destination.'); return; }
-        if (p === d) { showError('Pickup and destination cannot be the same.'); return; }
+async function cancelBooking() {
+    try {
+        await fetch("/api/cancel", {method: "POST"});
+        updateDashboard();
+    } catch(e) {}
+}
 
-        const btn = document.getElementById('book-btn');
-        btn.disabled = true; btn.textContent = 'BOOKING...';
+function startCountdown(secs) {
+    if (timer) clearInterval(timer);
+    let left = secs;
+    const el = document.getElementById("ctimer");
+    if (el) el.textContent = left + "s";
+    timer = setInterval(() => {
+        left--;
+        const el = document.getElementById("ctimer");
+        if (el) el.textContent = left + "s";
+        if (left <= 0) { clearInterval(timer); timer = null; updateDashboard(); }
+    }, 1000);
+}
 
-        try {
-            const res = await fetch('/api/book', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ pickup: p, destination: d })
-            });
-            const data = await res.json();
-            if (data.error) { showError(data.error); btn.disabled = false; btn.textContent = 'CONFIRM BOOKING'; return; }
-            updateDashboard();
-        } catch (e) {
-            showError('Connection error. Please try again.');
-            btn.disabled = false; btn.textContent = 'CONFIRM BOOKING';
+async function updateDashboard() {
+    try {
+        const res = await fetch("/api/state");
+        if (res.status === 401) { window.location.href = "/login"; return; }
+        const data = await res.json();
+
+        document.getElementById("fleet").innerHTML = data.fleet.map(k =>
+            "<div class='keke " + k.status + "'><div style='font-size:1.4rem'>&#128738;</div><div class='keke-name'>" + k.label + "</div><div class='keke-st'>" + (k.status === "free" ? "FREE" : "BUSY") + "</div></div>"
+        ).join("");
+
+        const sa = document.getElementById("status-area");
+        const bs = document.getElementById("booking-section");
+
+        if (data.personal_booking) {
+            bs.style.display = "none";
+            const b = data.personal_booking;
+            if (b.status === "queued") {
+                const w = data.avg_wait || 8;
+                sa.innerHTML = "<div class='card ticket-box'>" +
+                    "<div class='title' style='text-align:center'>Your Ticket</div>" +
+                    "<div class='ticket-code'>" + b.ticket.ticket_code + "</div>" +
+                    "<div class='badge-q'>QUEUE POSITION #" + b.position + "</div>" +
+                    "<div class='lbl'>ROUTE</div><div class='val'>" + b.ticket.pickup + " &rarr; " + b.ticket.destination + "</div>" +
+                    "<div class='wait'>Est. wait: <span class='wt'>" + w + " min" + (w !== 1 ? "s" : "") + "</span><br><small>A keke will be assigned shortly</small></div>" +
+                    "<div><button class='cancel' onclick='cancelBooking()'>Cancel Booking</button></div>" +
+                    "</div>";
+            } else if (b.status === "assigned") {
+                sa.innerHTML = "<div class='card ticket-box' style='border-color:var(--green);background:rgba(72,187,120,0.05)'>" +
+                    "<div class='title' style='color:var(--green);text-align:center'>Ride Assigned!</div>" +
+                    "<div class='ticket-code' style='color:var(--green);font-size:1.4rem'>" + b.keke_label + "</div>" +
+                    "<div class='badge-a'>ON YOUR WAY</div>" +
+                    "<div class='lbl'>TICKET</div><div class='val' style='color:var(--blue)'>" + b.ticket.ticket_code + "</div>" +
+                    "<div class='lbl'>ROUTE</div><div class='val'>" + b.ticket.pickup + " &rarr; " + b.ticket.destination + "</div>" +
+                    "<div class='wait'>Trip ends in: <span class='wt' id='ctimer'>60s</span></div>" +
+                    "</div>";
+                startCountdown(60);
+            }
+        } else {
+            if (timer) { clearInterval(timer); timer = null; }
+            bs.style.display = "block";
+            const btn = document.getElementById("book-btn");
+            btn.disabled = false; btn.textContent = "CONFIRM BOOKING";
+            sa.innerHTML = "";
         }
-    }
+    } catch(e) { console.error(e); }
+}
 
-    function showError(msg) {
-        const el = document.getElementById('err-msg');
-        el.textContent = msg; el.style.display = 'block';
-    }
-
-    function startCountdown(seconds, onDone) {
-        if (countdown) clearInterval(countdown);
-        const el = document.getElementById('countdown-timer');
-        if (!el) return;
-        let remaining = seconds;
-        el.textContent = remaining + 's';
-        countdown = setInterval(() => {
-            remaining--;
-            if (el) el.textContent = remaining + 's';
-            if (remaining <= 0) {
-                clearInterval(countdown);
-                countdown = null;
-                if (onDone) onDone();
-            }
-        }, 1000);
-    }
-
-    async function updateDashboard() {
-        try {
-            const res = await fetch('/api/state');
-            if (res.status === 401) { window.location.href = '/login'; return; }
-            const data = await res.json();
-
-            // Fleet
-            document.getElementById('fleet-display').innerHTML = data.fleet.map(keke => `
-                <div class="keke-unit ${keke.status}">
-                    <div style="font-size:1.4rem">🛺</div>
-                    <div class="keke-name">${keke.label}</div>
-                    <div class="keke-status">${keke.status === 'free' ? 'FREE' : 'BUSY'}</div>
-                </div>
-            `).join('');
-
-            const statusArea = document.getElementById('status-area');
-            const bookingSection = document.getElementById('booking-section');
-
-            if (data.personal_booking) {
-                bookingSection.style.display = 'none';
-                const b = data.personal_booking;
-
-                if (b.status === 'queued') {
-                    const waitMins = data.avg_wait || 8;
-                    statusArea.innerHTML = `
-                        <div class="card ticket-display">
-                            <div class="section-title" style="justify-content:center">Your Ticket</div>
-                            <div class="ticket-id">${b.ticket.ticket_code}</div>
-                            <div class="queue-badge">QUEUE POSITION #${b.position}</div>
-                            <div class="wait-info">
-                                Est. wait: <span class="wait-time">${waitMins} min${waitMins !== 1 ? 's' : ''}</span><br>
-                                <small>A keke will be assigned to you shortly</small>
-                            </div>
-                            <div class="ticket-label" style="margin-top:14px">ROUTE</div>
-                            <div class="ticket-value">${b.ticket.pickup} &rarr; ${b.ticket.destination}</div>
-                            <div><button class="cancel-btn" onclick="cancelBooking()">Cancel Booking</button></div>
-                        </div>`;
-                } else if (b.status === 'assigned') {
-                    statusArea.innerHTML = `
-                        <div class="card ticket-display" style="border-color: var(--success-green); background: rgba(72,187,120,0.05);">
-                            <div class="section-title" style="color:var(--success-green);text-align:center">Ride Assigned!</div>
-                            <div class="ticket-id" style="color:var(--success-green); font-size:1.4rem">${b.keke_label}</div>
-                            <div class="assigned-badge">ON YOUR WAY</div>
-                            <div class="ticket-label" style="margin-top:14px">TICKET</div>
-                            <div class="ticket-value" style="color:var(--accent-blue)">${b.ticket.ticket_code}</div>
-                            <div class="ticket-label" style="margin-top:8px">ROUTE</div>
-                            <div class="ticket-value">${b.ticket.pickup} &rarr; ${b.ticket.destination}</div>
-                            <div class="wait-info">
-                                Trip completes in ~<span id="countdown-timer" class="wait-time">60s</span>
-                            </div>
-                        </div>`;
-                    startCountdown(60, updateDashboard);
-                }
-            } else {
-                if (countdown) { clearInterval(countdown); countdown = null; }
-                bookingSection.style.display = 'block';
-                document.getElementById('book-btn').disabled = false;
-                document.getElementById('book-btn').textContent = 'CONFIRM BOOKING';
-                statusArea.innerHTML = '';
-            }
-        } catch (e) { console.error(e); }
-    }
-
-    async function cancelBooking() {
-        try {
-            const res = await fetch('/api/cancel', { method: 'POST' });
-            const data = await res.json();
-            if (data.success) updateDashboard();
-        } catch (e) { console.error(e); }
-    }
-
-    setInterval(updateDashboard, 3000);
-    updateDashboard();
+setInterval(updateDashboard, 3000);
+updateDashboard();
 </script>
-
 </body>
 </html>
