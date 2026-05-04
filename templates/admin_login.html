@@ -1,0 +1,88 @@
+!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AFIT Admin | Login</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            background: #0b1120;
+            background-image: radial-gradient(circle at 50% 30%, #1e293b 0%, #0b1120 70%);
+            color: #f8fafc; font-family: Segoe UI, sans-serif;
+            min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px;
+        }
+        .card {
+            background: rgba(22,30,45,0.9); border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 24px; padding: 40px 32px; width: 100%; max-width: 380px;
+            text-align: center; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
+        }
+        .icon { font-size: 40px; margin-bottom: 12px; }
+        .title { font-size: 20px; font-weight: 800; letter-spacing: 2px; margin-bottom: 4px; }
+        .sub { font-size: 10px; color: #64748b; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 28px; }
+        .lbl { display: block; font-size: 10px; font-weight: 800; color: #fff; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; text-align: left; }
+        input {
+            width: 100%; padding: 14px 16px; border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.1);
+            background: rgba(255,255,255,0.05); color: #fff;
+            font-size: 16px; outline: none; margin-bottom: 20px;
+            letter-spacing: 2px; text-align: center;
+        }
+        input:focus { border-color: #3b82f6; background: rgba(255,255,255,0.08); }
+        .btn {
+            width: 100%; padding: 15px;
+            background: linear-gradient(135deg, #1e40af, #3b82f6);
+            border: none; border-radius: 12px; color: #fff;
+            font-weight: 700; font-size: 14px; text-transform: uppercase;
+            letter-spacing: 1px; cursor: pointer;
+            box-shadow: 0 8px 20px -4px rgba(59,130,246,0.4);
+        }
+        .btn:hover { opacity: 0.9; }
+        .err {
+            background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3);
+            color: #fca5a5; padding: 10px 14px; border-radius: 8px;
+            font-size: 12px; margin-bottom: 16px; display: none;
+        }
+        .back { margin-top: 20px; font-size: 11px; color: #64748b; }
+        .back a { color: #3b82f6; text-decoration: none; }
+    </style>
+</head>
+<body>
+<div class="card">
+    <div class="icon">🔐</div>
+    <div class="title">ADMIN ACCESS</div>
+    <div class="sub">AFIT Smart-Keke Dashboard</div>
+    <div class="err" id="err"></div>
+    <label class="lbl" for="pw">Admin Password</label>
+    <input type="password" id="pw" placeholder="Enter password"/>
+    <button class="btn" onclick="doLogin()">ENTER DASHBOARD</button>
+    <div class="back"><a href="/">Back to Student Portal</a></div>
+</div>
+<script>
+async function doLogin() {
+    const pw = document.getElementById("pw").value.trim();
+    const err = document.getElementById("err");
+    err.style.display = "none";
+    if (!pw) { err.textContent = "Please enter the password."; err.style.display = "block"; return; }
+    try {
+        const res = await fetch("/admin/login", {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({password: pw})
+        });
+        const data = await res.json();
+        if (data.status === "success") {
+            window.location.href = "/admin";
+        } else {
+            err.textContent = data.message || "Incorrect password.";
+            err.style.display = "block";
+        }
+    } catch(e) {
+        err.textContent = "Connection error. Try again.";
+        err.style.display = "block";
+    }
+}
+document.addEventListener("keypress", e => { if (e.key === "Enter") doLogin(); });
+</script>
+</body>
+</html>
