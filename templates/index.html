@@ -41,7 +41,7 @@
         .field input { width: 100%; padding: 10px 14px; background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: 10px; color: var(--muted); font-size: 13px; outline: none; }
         select { width: 100%; padding: 11px 14px; background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: 10px; color: var(--text); font-size: 13px; font-family: 'Plus Jakarta Sans', sans-serif; outline: none; cursor: pointer; margin-bottom: 12px; }
         select option { background: #1e293b; }
-        .btn-book { width: 100%; padding: 14px; background: var(--gold); color: #000; border: none; border-radius: 12px; font-weight: 800; font-size: 14px; cursor: pointer; letter-spacing: 0.5px; transition: opacity 0.2s; }
+        .btn-book { width: 100%; padding: 14px; background: var(--gold); color: #000; border: none; border-radius: 12px; font-weight: 800; font-size: 14px; cursor: pointer; transition: opacity 0.2s; }
         .btn-book:hover { opacity: 0.88; }
 
         #ticket-card { display: none; border-color: rgba(59,130,246,0.3); background: rgba(59,130,246,0.05); }
@@ -51,7 +51,6 @@
         .badge { display: inline-block; padding: 3px 10px; border-radius: 6px; font-size: 10px; font-weight: 800; letter-spacing: 1px; margin-bottom: 10px; }
         .badge-queued { background: var(--gold); color: #000; }
         .badge-assigned { background: var(--green); color: #000; }
-        .badge-completed { background: #334155; color: #fff; }
         .info-row { font-size: 12px; color: var(--muted); margin-top: 6px; }
         .info-row strong { color: var(--text); }
         .countdown-bar { background: rgba(72,187,120,0.1); border: 1px solid rgba(72,187,120,0.25); border-radius: 10px; padding: 10px 14px; margin-top: 10px; display: flex; align-items: center; gap: 10px; }
@@ -94,8 +93,8 @@
         .notif { padding: 11px 14px; border-radius: 10px; font-size: 12px; margin-bottom: 8px; border: 1px solid rgba(255,255,255,0.08); animation: slideIn 0.3s ease; }
         @keyframes slideIn { from { opacity:0; transform: translateX(16px); } to { opacity:1; transform: translateX(0); } }
         .n-success { background: #14532d; border-color: rgba(72,187,120,0.3); }
-        .n-error   { background: #7f1d1d; border-color: rgba(239,68,68,0.3); }
-        .n-info    { background: #1e3a5f; border-color: rgba(59,130,246,0.3); }
+        .n-error { background: #7f1d1d; border-color: rgba(239,68,68,0.3); }
+        .n-info { background: #1e3a5f; border-color: rgba(59,130,246,0.3); }
 
         footer { text-align: center; padding: 16px; font-size: 10px; color: #1e293b; border-top: 1px solid var(--border); margin-top: 8px; }
         @media (max-width: 768px) { main { grid-template-columns: 1fr; } .h-stats { display: none; } }
@@ -167,34 +166,30 @@
 <footer>Air Force Institute of Technology, Kaduna — Smart Campus Transport Management System</footer>
 
 <script>
-    // ── State ────────────────────────────────────────────────
-    let tripTimer  = null;
-    let tripSecs   = 60;
-    let myMatric   = '';
-    let myName     = '';
+    let tripTimer   = null;
+    let tripSecs    = 60;
+    let myMatric    = '';
+    let myName      = '';
     let myBookingId = null;
 
-    // ── Init ─────────────────────────────────────────────────
     async function initPage() {
         const res = await fetch('/api/state');
         if (res.status === 401) { window.location.href = '/login'; return; }
         const d = await res.json();
 
-        // Get user info from session via personal booking or just show generic
-        if (d.personal_booking) {
-            myMatric = d.personal_booking.matric || '';
-            myName   = d.personal_booking.name   || '';
+        if (d.user) {
+            myName   = d.user.name   || '';
+            myMatric = d.user.matric || '';
         }
 
-        document.getElementById('h-name').textContent    = myName || 'Student';
-        document.getElementById('p-name').value          = myName;
-        document.getElementById('p-matric').value        = myMatric;
+        document.getElementById('h-name').textContent = myName || 'Student';
+        document.getElementById('p-name').value       = myName;
+        document.getElementById('p-matric').value     = myMatric;
 
         renderAll(d);
         loadHistory();
     }
 
-    // ── Book ─────────────────────────────────────────────────
     async function submitBooking() {
         const pickup = document.getElementById('pickup').value;
         const dest   = document.getElementById('destination').value;
@@ -215,7 +210,6 @@
         refresh();
     }
 
-    // ── Cancel ───────────────────────────────────────────────
     async function cancelBooking() {
         if (!confirm('Cancel your booking?')) return;
         await fetch('/api/cancel', {method: 'POST'});
@@ -225,7 +219,6 @@
         refresh();
     }
 
-    // ── Refresh ──────────────────────────────────────────────
     async function refresh() {
         const res = await fetch('/api/state');
         if (res.status === 401) { window.location.href = '/login'; return; }
@@ -234,7 +227,6 @@
         loadHistory();
     }
 
-    // ── Render ───────────────────────────────────────────────
     function renderAll(d) {
         const free = d.fleet.filter(t => t.status === 'free').length;
         const busy = d.fleet.filter(t => t.status === 'busy').length;
@@ -243,7 +235,6 @@
         document.getElementById('h-wait').textContent  = d.avg_wait;
         document.getElementById('q-count').textContent = d.queue.length;
 
-        // Fleet
         document.getElementById('fleet-display').innerHTML = d.fleet.map(t => `
             <div class="keke-unit ${t.status}">
                 <div class="keke-emoji">🛺</div>
@@ -252,7 +243,6 @@
                 ${t.passenger ? `<div class="keke-passenger">${t.passenger}</div>` : ''}
             </div>`).join('');
 
-        // Queue
         const ql = document.getElementById('queue-list');
         if (!d.queue.length) {
             ql.innerHTML = '<div class="empty-state">No passengers waiting</div>';
@@ -269,18 +259,13 @@
                 </div>`).join('');
         }
 
-        // Active booking
-        const pb           = d.personal_booking;
-        const ticketCard   = document.getElementById('ticket-card');
-        const bookingCard  = document.getElementById('booking-card');
-        const ticketBody   = document.getElementById('ticket-body');
+        const pb          = d.personal_booking;
+        const ticketCard  = document.getElementById('ticket-card');
+        const bookingCard = document.getElementById('booking-card');
+        const ticketBody  = document.getElementById('ticket-body');
 
         if (pb) {
             myBookingId = pb.booking_id;
-            if (pb.name)   { myName   = pb.name;   document.getElementById('h-name').textContent  = myName; }
-            if (pb.matric) { myMatric = pb.matric;  document.getElementById('p-matric').value      = myMatric; }
-            document.getElementById('p-name').value = myName;
-
             ticketCard.style.display  = 'block';
             bookingCard.style.display = 'none';
 
@@ -291,7 +276,6 @@
                 </div>`;
 
             if (pb.status === 'queued') {
-                // Clear countdown if they were previously assigned
                 if (tripTimer) { clearInterval(tripTimer); tripTimer = null; tripSecs = 60; }
                 html += `
                     <span class="badge badge-queued">QUEUED — Position #${pb.position || '?'}</span>
@@ -300,14 +284,10 @@
                     <button class="btn-cancel" onclick="cancelBooking()">✕ Cancel Booking</button>`;
 
             } else if (pb.status === 'assigned') {
-                // ── KEY FIX: Only start countdown once, never reset it ──
-                if (!tripTimer) {
-                    tripSecs = 60;
-                    startCountdown();
-                }
+                if (!tripTimer) { tripSecs = 60; startCountdown(); }
                 html += `
                     <span class="badge badge-assigned">ASSIGNED</span>
-                    <div class="info-row">Tricycle: <strong>${pb.tricycle || pb.keke_label || '—'}</strong></div>
+                    <div class="info-row">Tricycle: <strong>${pb.tricycle || '—'}</strong></div>
                     <div class="info-row">Route: <strong>${pb.pickup} → ${pb.destination}</strong></div>
                     <div class="countdown-bar">
                         <div>
@@ -321,7 +301,6 @@
             ticketBody.innerHTML = html;
 
         } else {
-            // No active booking
             ticketCard.style.display  = 'none';
             bookingCard.style.display = 'block';
             if (tripTimer) { clearInterval(tripTimer); tripTimer = null; tripSecs = 60; }
@@ -329,20 +308,15 @@
         }
     }
 
-    // ── Countdown ────────────────────────────────────────────
     function startCountdown() {
         tripTimer = setInterval(() => {
             tripSecs = Math.max(tripSecs - 1, 0);
             const el = document.getElementById('cd-num');
             if (el) el.textContent = tripSecs;
-            if (tripSecs <= 0) {
-                clearInterval(tripTimer);
-                tripTimer = null;
-            }
+            if (tripSecs <= 0) { clearInterval(tripTimer); tripTimer = null; }
         }, 1000);
     }
 
-    // ── History ──────────────────────────────────────────────
     async function loadHistory() {
         const res  = await fetch('/api/history');
         const data = await res.json();
@@ -359,7 +333,6 @@
             </div>`).join('');
     }
 
-    // ── Notification ─────────────────────────────────────────
     function showNotif(msg, type = 'info') {
         const div = document.createElement('div');
         div.className = `notif n-${type}`;
@@ -368,7 +341,6 @@
         setTimeout(() => div.remove(), 5000);
     }
 
-    // ── Start ─────────────────────────────────────────────────
     initPage();
     setInterval(refresh, 3000);
 </script>
