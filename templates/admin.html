@@ -39,7 +39,6 @@
         .booking-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border); }
         .booking-row:last-child { border-bottom: none; }
         .booking-name { font-size: 0.85rem; font-weight: 700; }
-        .booking-matric { font-size: 0.7rem; color: var(--dim); }
         .booking-route { font-size: 0.72rem; color: var(--dim); margin-top: 2px; }
         .booking-ticket { font-size: 0.65rem; color: var(--gold); font-family: monospace; margin-top: 2px; }
         .badge { padding: 3px 10px; border-radius: 20px; font-size: 0.6rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap; }
@@ -58,10 +57,10 @@
 </head>
 <body>
 <div class="header">
-    <h1>ADMIN DASHBOARD</h1>
+    <h1>📊 ADMIN DASHBOARD</h1>
     <div class="header-links">
         <a href="/">Student Portal</a>
-        <a href="/admin/logout" class="logout">Logout</a>
+        <a href="/api/logout" class="logout">Logout</a>
     </div>
 </div>
 
@@ -80,12 +79,12 @@
 </div>
 
 <div class="section">
-    <div class="sec-title">Recent Bookings</div>
+    <div class="sec-title">🕐 Recent Bookings</div>
     <div id="bookings-list"><div class="empty">No bookings yet</div></div>
 </div>
 
 <div class="section">
-    <div class="sec-title">Top Routes Today</div>
+    <div class="sec-title">📍 Top Routes Today</div>
     <div id="routes-list"><div class="empty">No data yet</div></div>
 </div>
 
@@ -93,52 +92,54 @@
 async function refresh() {
     try {
         const res = await fetch("/api/stats");
-        if (res.status === 401) { window.location.href = "/admin/login"; return; }
         const d = await res.json();
 
-        document.getElementById("total").textContent = d.total_bookings;
+        document.getElementById("total").textContent    = d.total_bookings;
         document.getElementById("completed").textContent = d.completed_trips;
-        document.getElementById("queued").textContent = d.currently_queued;
-        document.getElementById("active").textContent = d.active_trips;
-        document.getElementById("free").textContent = d.free_tricycles;
-        document.getElementById("avgwait").textContent = d.avg_wait || 0;
+        document.getElementById("queued").textContent   = d.currently_queued;
+        document.getElementById("active").textContent   = d.active_trips;
+        document.getElementById("free").textContent     = d.free_tricycles;
+        document.getElementById("avgwait").textContent  = d.avg_wait || 0;
 
-        document.getElementById("fleet").innerHTML = d.tricycles.map(t => {
-            const cls = t.status === "free" ? "keke-free" : "keke-busy";
-            const st = t.status === "free" ? "FREE" : "ON TRIP";
-            return "<div class='keke-card " + cls + "'>" +
-                "<div style='font-size:1.6rem'>&#128738;</div>" +
-                "<div class='keke-name'>" + t.label + "</div>" +
-                "<div class='keke-status'>" + st + "</div>" +
-                (t.passenger ? "<div class='keke-passenger'>" + t.passenger + "</div>" : "") +
-                (t.ticket_code ? "<div class='keke-ticket'>" + t.ticket_code + "</div>" : "") +
-                (t.route ? "<div class='keke-route'>" + t.route + "</div>" : "") +
-                "</div>";
-        }).join("");
+        // Fleet
+        if (d.tricycles && d.tricycles.length) {
+            document.getElementById("fleet").innerHTML = d.tricycles.map(t => `
+                <div class="keke-card ${t.status === 'free' ? 'keke-free' : 'keke-busy'}">
+                    <div style="font-size:1.6rem">🛺</div>
+                    <div class="keke-name">${t.label}</div>
+                    <div class="keke-status">${t.status === 'free' ? 'FREE' : 'ON TRIP'}</div>
+                    ${t.passenger ? `<div class="keke-passenger">${t.passenger}</div>` : ''}
+                    ${t.ticket_code ? `<div class="keke-ticket">${t.ticket_code}</div>` : ''}
+                    ${t.route ? `<div class="keke-route">${t.route}</div>` : ''}
+                </div>`).join('');
+        }
 
+        // Recent Bookings
         if (d.recent_bookings && d.recent_bookings.length > 0) {
-            document.getElementById("bookings-list").innerHTML = d.recent_bookings.map(b =>
-                "<div class='booking-row'>" +
-                "<div>" +
-                "<div class='booking-name'>" + b.name + "</div>" +
-                "<div class='booking-matric'>" + b.matric + "</div>" +
-                "<div class='booking-route'>" + b.pickup + " &rarr; " + b.destination + "</div>" +
-                "<div class='booking-ticket'>" + b.ticket_code + "</div>" +
-                "</div>" +
-                "<span class='badge badge-" + b.status + "'>" + b.status + "</span>" +
-                "</div>"
-            ).join("");
+            document.getElementById("bookings-list").innerHTML = d.recent_bookings.map(b => `
+                <div class="booking-row">
+                    <div>
+                        <div class="booking-name">${b.name}</div>
+                        <div class="booking-route">${b.pickup} → ${b.destination}</div>
+                        <div class="booking-ticket">${b.ticket_code}</div>
+                    </div>
+                    <span class="badge badge-${b.status}">${b.status}</span>
+                </div>`).join('');
         } else {
             document.getElementById("bookings-list").innerHTML = "<div class='empty'>No bookings yet</div>";
         }
 
+        // Top Routes — fixed: uses r.trips not r.count
         if (d.top_routes && d.top_routes.length > 0) {
-            document.getElementById("routes-list").innerHTML = d.top_routes.map(r =>
-                "<div class='route-row'><span class='route-text'>" + r.route + "</span><span class='route-count'>" + r.count + " trip" + (r.count !== 1 ? "s" : "") + "</span></div>"
-            ).join("");
+            document.getElementById("routes-list").innerHTML = d.top_routes.map(r => `
+                <div class="route-row">
+                    <span class="route-text">${r.route}</span>
+                    <span class="route-count">${r.trips} trip${r.trips !== 1 ? 's' : ''}</span>
+                </div>`).join('');
         } else {
             document.getElementById("routes-list").innerHTML = "<div class='empty'>No data yet</div>";
         }
+
     } catch(e) { console.error(e); }
 }
 
