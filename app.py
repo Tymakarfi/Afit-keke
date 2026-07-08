@@ -5,9 +5,17 @@ from datetime import datetime
 app = Flask(__name__)
 app.secret_key = "afit_secret_key_2024"
 
+# --- Simple staff passwords. Change these before deploying. ---
+ADMIN_PASSWORD = "Tym@2004"
+DRIVER_PASSWORD = "Afitdriver"
+
+# --- Timing constants (seconds) ---
+ARRIVE_SECONDS = 30   # time for the assigned tricycle to reach the pickup point
+TRIP_SECONDS = 60     # time for the actual journey once passenger boards
+
 stats = {"total_bookings": 0, "completed_trips": 0}
 
-tricycles = [{"id": i+1, "label": f"AFIT-KK-{i+1:02}", "status": "free", "passenger": None, "route": None, "ticket_code": None, "start_time": 0} for i in range(6)]
+tricycles = [{"id": i+1, "label": f"AFIT-KK-{i+1:02}", "status": "free", "passenger": None, "route": None, "ticket_code": None, "phase_start": 0} for i in range(6)]
 bookings = []
 
 def gen_ticket():
@@ -27,14 +35,25 @@ def calc_avg_wait():
 
 def process_simulation():
     current_time = time.time()
+
     for t in tricycles:
-        if t['status'] == 'busy' and (current_time - t['start_time']) >= 60:
+        # Phase 1: tricycle was en route to pickup the passenger -> now arrives
+        if t['status'] == 'enroute' and (current_time - t['phase_start']) >= ARRIVE_SECONDS:
+            t['status'] = 'busy'
+            t['phase_start'] = current_time
+            for b in bookings:
+                if b.get('ticket_code') == t['ticket_code']:
+                    b['status'] = 'onboard'
+                    break
+
+        # Phase 2: journey is underway -> now completes
+        elif t['status'] == 'busy' and (current_time - t['phase_start']) >= TRIP_SECONDS:
             stats["completed_trips"] += 1
             for b in bookings:
                 if b.get('ticket_code') == t['ticket_code']:
                     b['status'] = 'completed'
                     break
-            t.update({"status": "free", "passenger": None, "route": None, "ticket_code": None, "start_time": 0})
+            t.update({"status": "free", "passenger": None, "route": None, "ticket_code": None, "phase_start": 0})
 
     queued = [b for b in bookings if b['status'] == 'queued']
     free_list = [t for t in tricycles if t['status'] == 'free']
@@ -42,13 +61,13 @@ def process_simulation():
         person = queued[i]
         keke = free_list[i]
         keke.update({
-            "status": "busy",
+            "status": "enroute",
             "passenger": person['name'],
             "route": f"{person['pickup']} -> {person['destination']}",
             "ticket_code": person['ticket_code'],
-            "start_time": current_time
+            "phase_start": current_time
         })
-        person['status'] = 'assigned'
+        person['status'] = 'enroute'
         person['tricycle'] = keke['label']
 
 @app.route('/')
@@ -60,14 +79,6 @@ def index():
 @app.route('/login')
 def login_page():
     return render_template('login.html')
-
-@app.route('/driver')
-def driver_page():
-    return render_template('driver.html')
-
-@app.route('/admin')
-def admin_page():
-    return render_template('admin.html')
 
 @app.route('/login', methods=['POST'])
 def login():
@@ -91,6 +102,56 @@ def logout():
     session.clear()
     return redirect(url_for('login_page'))
 
+# ---------------- Driver ----------------
+
+@app.route('/driver')
+def driver_page():
+    if not session.get('is_driver'):
+        return redirect(url_for('driver_login'))
+    return render_template('driver.html')
+
+@app.route('/driver/login', methods=['GET', 'POST'])
+def driver_login():
+    if request.method == 'GET':
+        return render_template('driver_login.html')
+    data = request.json or {}
+    password = data.get('password', '').strip()
+    if password == DRIVER_PASSWORD:
+        session['is_driver'] = True
+        return jsonify({"status": "success"})
+    return jsonify({"status": "error", "message": "Incorrect password."}), 401
+
+@app.route('/driver/logout')
+def driver_logout():
+    session.pop('is_driver', None)
+    return redirect(url_for('driver_login'))
+
+# ---------------- Admin ----------------
+
+@app.route('/admin')
+def admin_page():
+    if not session.get('is_admin'):
+        return redirect(url_for('admin_login'))
+    return render_template('admin.html')
+
+@app.route('/admin/login', methods=['GET', 'POST'])
+def admin_login():
+    if request.method == 'GET':
+        return render_template('admin_login.html')
+    data = request.json or {}
+    password = data.get('password', '').strip()
+    if password == ADMIN_PASSWORD:
+        session['is_admin'] = True
+        return jsonify({"status": "success"})
+    return jsonify({"status": "error", "message": "Incorrect password."}), 401
+
+@app.route('/admin/logout')
+def admin_logout():
+    session.pop('is_admin', None)
+    return redirect(url_for('admin_login'))
+
+# ---------------- Booking API ----------------
+
 @app.route('/api/book', methods=['POST'])
 def book():
     if 'user' not in session:
@@ -107,7 +168,7 @@ def book():
     if pickup == destination:
         return jsonify({"error": "Pickup and destination cannot be the same."}), 400
 
-    existing = next((b for b in bookings if b['matric'] == matric and b['status'] in ('queued', 'assigned')), None)
+    existing = next((b for b in bookings if b['matric'] == matric and b['status'] in ('queued', 'enroute', 'onboard')), None)
     if existing:
         return jsonify({"error": "You already have an active booking."}), 400
 
@@ -149,7 +210,7 @@ def get_state():
     matric = session['matric']
     queue = [b for b in bookings if b['status'] == 'queued']
 
-    personal = next((b for b in bookings if b['matric'] == matric and b['status'] in ('queued', 'assigned')), None)
+    personal = next((b for b in bookings if b['matric'] == matric and b['status'] in ('queued', 'enroute', 'onboard')), None)
     personal_data = None
     if personal:
         p = dict(personal)
@@ -190,7 +251,7 @@ def verify_ticket(ticket_code):
 def get_stats():
     process_simulation()
     today = datetime.now().strftime('%Y-%m-%d')
-    active_trips = len([t for t in tricycles if t['status'] == 'busy'])
+    active_trips = len([t for t in tricycles if t['status'] in ('busy', 'enroute')])
 
     route_counts = {}
     for b in bookings:
@@ -208,7 +269,8 @@ def get_stats():
         "free_tricycles": 6 - active_trips,
         "avg_wait": calc_avg_wait(),
         "top_routes": top_routes,
-        "recent_bookings": recent
+        "recent_bookings": recent,
+        "tricycles": tricycles
     })
 
 @app.route('/api/history')
