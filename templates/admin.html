@@ -28,10 +28,12 @@
         .fleet-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
         .keke-card { border-radius: 12px; padding: 12px 8px; text-align: center; border: 1px solid var(--border); }
         .keke-free { background: rgba(34,197,94,0.06); border-color: rgba(34,197,94,0.3); }
+        .keke-enroute { background: rgba(59,130,246,0.06); border-color: rgba(59,130,246,0.3); }
         .keke-busy { background: rgba(245,158,11,0.06); border-color: rgba(245,158,11,0.3); }
         .keke-name { font-size: 0.75rem; font-weight: 700; margin-bottom: 2px; }
         .keke-status { font-size: 0.6rem; text-transform: uppercase; font-weight: 900; }
         .keke-free .keke-status { color: var(--green); }
+        .keke-enroute .keke-status { color: var(--blue); }
         .keke-busy .keke-status { color: var(--gold); }
         .keke-passenger { font-size: 0.65rem; color: var(--dim); margin-top: 4px; }
         .keke-route { font-size: 0.6rem; color: var(--dim); margin-top: 2px; line-height: 1.4; }
@@ -43,6 +45,8 @@
         .booking-ticket { font-size: 0.65rem; color: var(--gold); font-family: monospace; margin-top: 2px; }
         .badge { padding: 3px 10px; border-radius: 20px; font-size: 0.6rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap; }
         .badge-queued { background: rgba(245,158,11,0.15); color: var(--gold); border: 1px solid rgba(245,158,11,0.3); }
+        .badge-enroute { background: rgba(59,130,246,0.15); color: var(--blue); border: 1px solid rgba(59,130,246,0.3); }
+        .badge-onboard { background: rgba(34,197,94,0.15); color: var(--green); border: 1px solid rgba(34,197,94,0.3); }
         .badge-assigned { background: rgba(59,130,246,0.15); color: var(--blue); border: 1px solid rgba(59,130,246,0.3); }
         .badge-completed { background: rgba(34,197,94,0.15); color: var(--green); border: 1px solid rgba(34,197,94,0.3); }
         .badge-cancelled { background: rgba(239,68,68,0.15); color: var(--red); border: 1px solid rgba(239,68,68,0.3); }
@@ -60,7 +64,7 @@
     <h1>📊 ADMIN DASHBOARD</h1>
     <div class="header-links">
         <a href="/">Student Portal</a>
-        <a href="/api/logout" class="logout">Logout</a>
+        <a href="/admin/logout" class="logout">Logout</a>
     </div>
 </div>
 
@@ -89,6 +93,17 @@
 </div>
 
 <script>
+function fleetClass(status) {
+    if (status === 'free') return 'keke-free';
+    if (status === 'enroute') return 'keke-enroute';
+    return 'keke-busy';
+}
+function fleetLabel(status) {
+    if (status === 'free') return 'FREE';
+    if (status === 'enroute') return 'EN ROUTE';
+    return 'ON TRIP';
+}
+
 async function refresh() {
     try {
         const res = await fetch("/api/stats");
@@ -104,10 +119,10 @@ async function refresh() {
         // Fleet
         if (d.tricycles && d.tricycles.length) {
             document.getElementById("fleet").innerHTML = d.tricycles.map(t => `
-                <div class="keke-card ${t.status === 'free' ? 'keke-free' : 'keke-busy'}">
+                <div class="keke-card ${fleetClass(t.status)}">
                     <div style="font-size:1.6rem">🛺</div>
                     <div class="keke-name">${t.label}</div>
-                    <div class="keke-status">${t.status === 'free' ? 'FREE' : 'ON TRIP'}</div>
+                    <div class="keke-status">${fleetLabel(t.status)}</div>
                     ${t.passenger ? `<div class="keke-passenger">${t.passenger}</div>` : ''}
                     ${t.ticket_code ? `<div class="keke-ticket">${t.ticket_code}</div>` : ''}
                     ${t.route ? `<div class="keke-route">${t.route}</div>` : ''}
@@ -129,7 +144,7 @@ async function refresh() {
             document.getElementById("bookings-list").innerHTML = "<div class='empty'>No bookings yet</div>";
         }
 
-        // Top Routes — fixed: uses r.trips not r.count
+        // Top Routes
         if (d.top_routes && d.top_routes.length > 0) {
             document.getElementById("routes-list").innerHTML = d.top_routes.map(r => `
                 <div class="route-row">
