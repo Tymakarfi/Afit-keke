@@ -321,7 +321,7 @@
             } else if (pb.status === 'onboard') {
                 if (lastStatus === 'enroute') {
                     if (arriveTimer) { clearInterval(arriveTimer); arriveTimer = null; }
-                    showNotif('🛺 Your tricycle has arrived! Journey started.', 'success');
+                    showNotif('🛺 Your tricycle has arrived! Please verify your ticket before the journey starts.', 'success');
                 }
                 if (!tripTimer) { tripSecs = 60; startTripCountdown(); }
                 html += `
