@@ -50,11 +50,14 @@
         .ticket-label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
         .badge { display: inline-block; padding: 3px 10px; border-radius: 6px; font-size: 10px; font-weight: 800; letter-spacing: 1px; margin-bottom: 10px; }
         .badge-queued { background: var(--gold); color: #000; }
-        .badge-assigned { background: var(--green); color: #000; }
+        .badge-enroute { background: var(--blue); color: #fff; }
+        .badge-onboard { background: var(--green); color: #000; }
         .info-row { font-size: 12px; color: var(--muted); margin-top: 6px; }
         .info-row strong { color: var(--text); }
         .countdown-bar { background: rgba(72,187,120,0.1); border: 1px solid rgba(72,187,120,0.25); border-radius: 10px; padding: 10px 14px; margin-top: 10px; display: flex; align-items: center; gap: 10px; }
+        .countdown-bar.enroute { background: rgba(59,130,246,0.1); border-color: rgba(59,130,246,0.25); }
         .cd-num { font-size: 28px; font-weight: 900; color: var(--green); line-height: 1; }
+        .countdown-bar.enroute .cd-num { color: var(--blue); }
         .cd-label { font-size: 11px; color: var(--muted); }
         .btn-cancel { background: none; border: 1px solid rgba(239,68,68,0.3); color: var(--red); padding: 7px 14px; border-radius: 8px; font-size: 11px; cursor: pointer; margin-top: 10px; font-family: 'Plus Jakarta Sans', sans-serif; }
         .btn-cancel:hover { background: rgba(239,68,68,0.08); }
@@ -71,18 +74,20 @@
         .fleet-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
         .keke-unit { padding: 14px 8px; border-radius: 12px; border: 1px solid var(--border); text-align: center; transition: all 0.3s; }
         .keke-unit.free { background: rgba(72,187,120,0.08); border-color: var(--green); }
+        .keke-unit.enroute { background: rgba(59,130,246,0.08); border-color: var(--blue); }
         .keke-unit.busy { background: rgba(246,173,85,0.08); border-color: var(--gold); }
         .keke-emoji { font-size: 22px; }
         .keke-name { font-size: 11px; font-weight: 700; margin-top: 4px; }
         .keke-status { font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 2px; }
         .keke-unit.free .keke-status { color: var(--green); }
+        .keke-unit.enroute .keke-status { color: var(--blue); }
         .keke-unit.busy .keke-status { color: var(--gold); }
         .keke-passenger { font-size: 9px; color: var(--muted); margin-top: 3px; }
 
         .history-item { display: flex; align-items: center; gap: 10px; padding: 9px 0; border-bottom: 1px solid var(--border); font-size: 12px; }
         .history-item:last-child { border-bottom: none; }
         .h-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
-        .s-completed { background: var(--green); } .s-assigned { background: var(--gold); }
+        .s-completed { background: var(--green); } .s-onboard { background: var(--gold); } .s-enroute { background: var(--blue); }
         .s-queued { background: var(--blue); } .s-cancelled { background: var(--red); }
         .h-info { flex: 1; }
         .h-route { font-weight: 600; color: var(--text); }
@@ -134,6 +139,8 @@
                 <option>Main Gate</option><option>Academic Block</option><option>Library</option>
                 <option>Hostel A</option><option>Hostel B</option><option>Sports Complex</option>
                 <option>Clinic</option><option>Mess Hall</option><option>Admin Block</option><option>Engineering Lab</option>
+                <option>Bush Canteen</option><option>ICT</option><option>FOS</option><option>FOC</option>
+                <option>FSMS</option><option>Alpha Hall</option><option>Girls Hostel</option><option>Boys Hostel</option>
             </select>
             <label style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:1px;display:block;margin-bottom:6px">Destination</label>
             <select id="destination">
@@ -141,6 +148,8 @@
                 <option>Main Gate</option><option>Academic Block</option><option>Library</option>
                 <option>Hostel A</option><option>Hostel B</option><option>Sports Complex</option>
                 <option>Clinic</option><option>Mess Hall</option><option>Admin Block</option><option>Engineering Lab</option>
+                <option>Bush Canteen</option><option>ICT</option><option>FOS</option><option>FOC</option>
+                <option>FSMS</option><option>Alpha Hall</option><option>Girls Hostel</option><option>Boys Hostel</option>
             </select>
             <button class="btn-book" onclick="submitBooking()">CONFIRM BOOKING</button>
         </div>
@@ -166,8 +175,11 @@
 <footer>Air Force Institute of Technology, Kaduna — Smart Campus Transport Management System</footer>
 
 <script>
+    let arriveTimer = null;
+    let arriveSecs  = 30;   // time for the assigned tricycle to reach pickup
     let tripTimer   = null;
-    let tripSecs    = 60;
+    let tripSecs    = 60;   // time for the actual journey
+    let lastStatus  = null; // used to detect enroute -> onboard transition
     let myMatric    = '';
     let myName      = '';
     let myBookingId = null;
@@ -213,10 +225,18 @@
     async function cancelBooking() {
         if (!confirm('Cancel your booking?')) return;
         await fetch('/api/cancel', {method: 'POST'});
-        clearInterval(tripTimer); tripTimer = null; tripSecs = 60;
+        resetTimers();
         myBookingId = null;
         showNotif('Booking cancelled.', 'info');
         refresh();
+    }
+
+    function resetTimers() {
+        if (arriveTimer) { clearInterval(arriveTimer); arriveTimer = null; }
+        if (tripTimer)   { clearInterval(tripTimer);   tripTimer   = null; }
+        arriveSecs = 30;
+        tripSecs   = 60;
+        lastStatus = null;
     }
 
     async function refresh() {
@@ -228,10 +248,11 @@
     }
 
     function renderAll(d) {
-        const free = d.fleet.filter(t => t.status === 'free').length;
-        const busy = d.fleet.filter(t => t.status === 'busy').length;
+        const free    = d.fleet.filter(t => t.status === 'free').length;
+        const enroute = d.fleet.filter(t => t.status === 'enroute').length;
+        const busy    = d.fleet.filter(t => t.status === 'busy').length;
         document.getElementById('h-free').textContent  = free;
-        document.getElementById('h-busy').textContent  = busy;
+        document.getElementById('h-busy').textContent  = enroute + busy;
         document.getElementById('h-wait').textContent  = d.avg_wait;
         document.getElementById('q-count').textContent = d.queue.length;
 
@@ -239,7 +260,7 @@
             <div class="keke-unit ${t.status}">
                 <div class="keke-emoji">🛺</div>
                 <div class="keke-name">${t.label}</div>
-                <div class="keke-status">${t.status === 'free' ? 'FREE' : 'ON TRIP'}</div>
+                <div class="keke-status">${t.status === 'free' ? 'FREE' : (t.status === 'enroute' ? 'EN ROUTE' : 'ON TRIP')}</div>
                 ${t.passenger ? `<div class="keke-passenger">${t.passenger}</div>` : ''}
             </div>`).join('');
 
@@ -276,17 +297,35 @@
                 </div>`;
 
             if (pb.status === 'queued') {
-                if (tripTimer) { clearInterval(tripTimer); tripTimer = null; tripSecs = 60; }
+                if (arriveTimer || tripTimer) resetTimers();
                 html += `
                     <span class="badge badge-queued">QUEUED — Position #${pb.position || '?'}</span>
                     <div class="info-row">Route: <strong>${pb.pickup} → ${pb.destination}</strong></div>
                     <div class="info-row">Est. Wait: <strong>~${pb.est_wait || '?'} min</strong></div>
                     <button class="btn-cancel" onclick="cancelBooking()">✕ Cancel Booking</button>`;
 
-            } else if (pb.status === 'assigned') {
-                if (!tripTimer) { tripSecs = 60; startCountdown(); }
+            } else if (pb.status === 'enroute') {
+                if (!arriveTimer) { arriveSecs = 30; startArriveCountdown(); }
                 html += `
-                    <span class="badge badge-assigned">ASSIGNED</span>
+                    <span class="badge badge-enroute">TRICYCLE EN ROUTE</span>
+                    <div class="info-row">Tricycle: <strong>${pb.tricycle || '—'}</strong></div>
+                    <div class="info-row">Route: <strong>${pb.pickup} → ${pb.destination}</strong></div>
+                    <div class="countdown-bar enroute">
+                        <div>
+                            <div class="cd-num" id="cd-num">${arriveSecs}</div>
+                            <div class="cd-label">seconds until arrival</div>
+                        </div>
+                        <span style="font-size:12px;color:var(--muted)">🛺 On its way to pickup</span>
+                    </div>`;
+
+            } else if (pb.status === 'onboard') {
+                if (lastStatus === 'enroute') {
+                    if (arriveTimer) { clearInterval(arriveTimer); arriveTimer = null; }
+                    showNotif('🛺 Your tricycle has arrived! Journey started.', 'success');
+                }
+                if (!tripTimer) { tripSecs = 60; startTripCountdown(); }
+                html += `
+                    <span class="badge badge-onboard">JOURNEY IN PROGRESS</span>
                     <div class="info-row">Tricycle: <strong>${pb.tricycle || '—'}</strong></div>
                     <div class="info-row">Route: <strong>${pb.pickup} → ${pb.destination}</strong></div>
                     <div class="countdown-bar">
@@ -298,17 +337,27 @@
                     </div>`;
             }
 
+            lastStatus = pb.status;
             ticketBody.innerHTML = html;
 
         } else {
             ticketCard.style.display  = 'none';
             bookingCard.style.display = 'block';
-            if (tripTimer) { clearInterval(tripTimer); tripTimer = null; tripSecs = 60; }
+            resetTimers();
             myBookingId = null;
         }
     }
 
-    function startCountdown() {
+    function startArriveCountdown() {
+        arriveTimer = setInterval(() => {
+            arriveSecs = Math.max(arriveSecs - 1, 0);
+            const el = document.getElementById('cd-num');
+            if (el) el.textContent = arriveSecs;
+            if (arriveSecs <= 0) { clearInterval(arriveTimer); arriveTimer = null; }
+        }, 1000);
+    }
+
+    function startTripCountdown() {
         tripTimer = setInterval(() => {
             tripSecs = Math.max(tripSecs - 1, 0);
             const el = document.getElementById('cd-num');
