@@ -11,8 +11,11 @@
     header { background: rgba(11,17,32,0.95); border-bottom: 1px solid rgba(255,255,255,0.09); padding: 0 28px; height: 60px; display: flex; align-items: center; justify-content: space-between; }
     .h-title { font-family: 'Bebas Neue', sans-serif; font-size: 22px; letter-spacing: 0.1em; }
     .h-sub { font-size: 10px; color: #64748b; letter-spacing: 0.15em; }
+    .header-links { display: flex; gap: 10px; }
     .back-btn { font-size: 12px; color: #64748b; text-decoration: none; border: 1px solid rgba(255,255,255,0.1); padding: 6px 14px; border-radius: 6px; }
     .back-btn:hover { color: #3b82f6; border-color: #3b82f6; }
+    .back-btn.logout { color: #ef4444; border-color: rgba(239,68,68,0.3); }
+    .back-btn.logout:hover { background: rgba(239,68,68,0.1); color: #ef4444; }
     main { max-width: 900px; margin: 28px auto; padding: 0 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
     .card { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.09); border-radius: 12px; padding: 20px; }
     .card-title { font-size: 10px; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase; color: #3b82f6; margin-bottom: 16px; padding-bottom: 10px; border-bottom: 1px solid rgba(59,130,246,0.15); }
@@ -28,14 +31,18 @@
     .v-badge { display: inline-block; padding: 3px 10px; border-radius: 4px; font-size: 10px; font-weight: 700; letter-spacing: 0.1em; }
     .v-assigned { background: #22c55e; color: #000; }
     .v-queued { background: #f59e0b; color: #000; }
+    .v-enroute { background: #3b82f6; color: #fff; }
+    .v-onboard { background: #22c55e; color: #000; }
     .v-completed { background: #334155; color: #fff; }
     .keke-item { display: flex; align-items: center; gap: 12px; padding: 12px; border-radius: 8px; margin-bottom: 8px; border: 1px solid rgba(255,255,255,0.06); }
     .keke-free { background: rgba(34,197,94,0.06); border-color: rgba(34,197,94,0.2); }
+    .keke-enroute { background: rgba(59,130,246,0.06); border-color: rgba(59,130,246,0.2); }
     .keke-busy { background: rgba(245,158,11,0.06); border-color: rgba(245,158,11,0.2); }
     .keke-icon { font-size: 28px; }
     .keke-label { font-size: 14px; font-weight: 700; }
     .keke-status { font-size: 10px; letter-spacing: 0.1em; margin-top: 2px; }
     .keke-free .keke-status { color: #22c55e; }
+    .keke-enroute .keke-status { color: #3b82f6; }
     .keke-busy .keke-status { color: #f59e0b; }
     .keke-detail { font-size: 11px; color: #64748b; margin-top: 2px; }
     .keke-ticket-code { font-size: 11px; color: #f59e0b; font-family: monospace; }
@@ -48,7 +55,10 @@
     <div class="h-title">🚗 Driver Panel</div>
     <div class="h-sub">AFIT Smart-Keke — Staff View</div>
   </div>
-  <a href="/login" class="back-btn">← Student Portal</a>
+  <div class="header-links">
+    <a href="/login" class="back-btn">← Student Portal</a>
+    <a href="/driver/logout" class="back-btn logout">Logout</a>
+  </div>
 </header>
 <main>
   <div class="card">
@@ -63,6 +73,24 @@
   </div>
 </main>
 <script>
+  function statusLabel(s) {
+    if (s === 'free') return 'AVAILABLE';
+    if (s === 'enroute') return 'EN ROUTE TO PICKUP';
+    return 'ON TRIP';
+  }
+  function statusClass(s) {
+    if (s === 'free') return 'keke-free';
+    if (s === 'enroute') return 'keke-enroute';
+    return 'keke-busy';
+  }
+  function badgeClassFor(status) {
+    if (status === 'queued') return 'v-queued';
+    if (status === 'enroute') return 'v-enroute';
+    if (status === 'onboard') return 'v-onboard';
+    if (status === 'completed') return 'v-completed';
+    return 'v-assigned';
+  }
+
   async function verifyTicket() {
     const code = document.getElementById("tkt-input").value.trim().toUpperCase();
     if (!code) return;
@@ -74,7 +102,7 @@
       el.innerHTML = `<div class="verify-card invalid"><div style="color:#ef4444;font-weight:700">INVALID TICKET</div><div style="font-size:13px;color:#94a3b8;margin-top:6px">No booking found for this code.</div></div>`;
       return;
     }
-    const badgeClass = d.status === 'assigned' ? 'v-assigned' : d.status === 'queued' ? 'v-queued' : 'v-completed';
+    const badgeClass = badgeClassFor(d.status);
     el.innerHTML = `<div class="verify-card">
       <div class="v-label">TICKET CODE</div><div class="v-ticket">${d.ticket_code}</div>
       <div class="v-label">PASSENGER</div><div class="v-value">${d.name} <span style="color:#64748b;font-size:12px">(${d.matric})</span></div>
@@ -88,11 +116,11 @@
     const res = await fetch("/status");
     const d = await res.json();
     document.getElementById("fleet-list").innerHTML = d.tricycles.map(t => `
-      <div class="keke-item ${t.status === 'free' ? 'keke-free' : 'keke-busy'}">
+      <div class="keke-item ${statusClass(t.status)}">
         <div class="keke-icon">🛺</div>
         <div style="flex:1">
           <div class="keke-label">${t.label}</div>
-          <div class="keke-status">${t.status === 'free' ? 'AVAILABLE' : 'ON TRIP'}</div>
+          <div class="keke-status">${statusLabel(t.status)}</div>
           ${t.passenger ? `<div class="keke-detail">👤 ${t.passenger}</div>` : ''}
           ${t.ticket_code ? `<div class="keke-ticket-code">${t.ticket_code}</div>` : ''}
           ${t.route ? `<div class="keke-detail">📍 ${t.route}</div>` : ''}
